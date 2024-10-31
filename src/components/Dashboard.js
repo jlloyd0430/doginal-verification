@@ -33,22 +33,23 @@ const Dashboard = () => {
     }
   };
 
-  const logUserData = async (walletAddress) => {
-    if (!discordID) {
-      console.error("Discord ID not set. Please log in.");
-      return;
-    }
-  
-    try {
-      await axios.post('http://localhost:5000/api/users/log-user-data', {
-        discordID,
-        walletAddress,
-      });
-      console.log('User data logged successfully');
-    } catch (error) {
-      console.error('Error logging user data:', error);
-    }
-  };
+const logUserData = async (walletAddress) => {
+  if (!discordID) {
+    console.error("Discord ID not set. Please log in.");
+    return;
+  }
+
+  try {
+    await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', { // Updated URL
+      discordID,
+      walletAddress,
+    });
+    console.log('User data logged successfully');
+  } catch (error) {
+    console.error('Error logging user data:', error);
+  }
+};
+
 
   return (
     <div className="dashboard-container">
