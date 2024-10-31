@@ -1,0 +1,26 @@
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+  }
+  
+  .wallet-button {
+    background-color: #FFD700; /* Gold color */
+    color: #fff;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    cursor: pointer;
+    margin-top: 20px;
+  }
+  
+  .wallet-button:hover {
+    background-color: #e6be00; /* Darker gold on hover */
+  }
+  
