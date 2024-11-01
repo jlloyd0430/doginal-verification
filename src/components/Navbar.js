@@ -11,7 +11,7 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
 
   return (
     <nav className="navbar">
-      <h1 className="navbar-logo">MyApp</h1>
+      <h1 className="navbar-logo">Dogepond Verification</h1>
       <div className="menu-icon" onClick={toggleMenu}>
         <div className={`bar ${menuOpen ? 'open' : ''}`} />
         <div className={`bar ${menuOpen ? 'open' : ''}`} />
