@@ -18,8 +18,6 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
         <div className={`bar ${menuOpen ? 'open' : ''}`} />
       </div>
       <ul className={`nav-links ${menuOpen ? 'show' : ''}`}>
-        <li><Link to="/" onClick={() => setMenuOpen(false)}>Home</Link></li>
-        <li><Link to="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard</Link></li>
         <li><Link to="/applications" onClick={() => setMenuOpen(false)}>Applications</Link></li>
         <li><Link to="/services" onClick={() => setMenuOpen(false)}>Services</Link></li>
       </ul>
