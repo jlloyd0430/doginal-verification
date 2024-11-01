@@ -4,7 +4,7 @@ import { connectWallet, DOGELABS_WALLET, MYDOGE_WALLET } from '../wallet';
 import './Dashboard.css';
 
 const Dashboard = () => {
-  const [walletAddress, setWalletAddress] = useState(null); // Only set this after verification
+  const [walletAddress, setWalletAddress] = useState(null);
   const [discordID, setDiscordID] = useState(null);
   const [walletProvider, setWalletProvider] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -12,7 +12,7 @@ const Dashboard = () => {
   const [randomAmount, setRandomAmount] = useState(null);
   const [timer, setTimer] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
-  const [tempAddress, setTempAddress] = useState(''); // Temporary address before verification
+  const [tempAddress, setTempAddress] = useState(''); // Temporary address for mobile verification
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -27,7 +27,7 @@ const Dashboard = () => {
         .then((res) => res.json())
         .then((data) => {
           setDiscordID(data.id);
-          console.log("Discord ID:", data.id);
+          console.log("Discord ID fetched:", data.id);
         })
         .catch((error) => console.error("Failed to fetch Discord user info:", error));
     }
@@ -37,9 +37,9 @@ const Dashboard = () => {
     setWalletProvider(selectedWalletProvider);
     try {
       const walletInfo = await connectWallet(selectedWalletProvider);
-      console.log('Wallet info:', walletInfo);
+      console.log('Wallet connection info:', walletInfo);
       if (walletInfo && walletInfo.address) {
-        setWalletAddress(walletInfo.address); // Set only after API verification
+        setWalletAddress(walletInfo.address);
         logUserData(walletInfo.address, selectedWalletProvider);
       } else {
         console.error("Wallet connection failed or address is missing.");
@@ -61,7 +61,6 @@ const Dashboard = () => {
         walletAddress: address,
         provider,
       });
-
       if (response.status === 200) {
         console.log('User data logged successfully');
       } else {
@@ -73,6 +72,7 @@ const Dashboard = () => {
   };
 
   const handleMobileVerification = () => {
+    console.log("Initiating mobile verification");
     setMobileVerification(true);
   };
 
@@ -82,12 +82,14 @@ const Dashboard = () => {
     setTimer(Date.now() + process.env.REACT_APP_TRANSACTION_TIMEOUT * 60000); // Set timer
     setIsVerifying(true);
 
+    console.log(`Mobile verification started. Requesting ${randomAmount} DOGE to be sent to ${tempAddress}`);
     alert(`Please send exactly ${randomAmount} DOGE from your wallet (${tempAddress}) to the same address within the next 30 minutes.`);
 
     validateTransaction(tempAddress, randomAmount);
   };
 
   const validateTransaction = async (address, amount) => {
+    console.log(`Starting transaction validation for address: ${address} with amount: ${amount}`);
     const interval = setInterval(async () => {
       try {
         const result = await axios.get(`https://svc.blockdaemon.com/universal/v1/dogecoin/mainnet/account/${address}/utxo`, {
@@ -98,9 +100,12 @@ const Dashboard = () => {
         });
 
         const transactions = result.data.data;
+        console.log(`Transactions fetched from Blockdaemon for ${address}:`, transactions);
+
         for (const tx of transactions) {
           if (tx.value === amount * 100000000 && tx.mined.confirmations >= process.env.REACT_APP_TX_CONFIRMATIONS) {
             clearInterval(interval);
+            console.log(`Transaction confirmed for ${address} with TX ID: ${tx.mined.tx_id}`);
             alert('Wallet verified successfully!');
             setWalletAddress(address); // Set the verified address to walletAddress
             logUserData(address, 'mobile'); // Log only after verification
@@ -112,6 +117,7 @@ const Dashboard = () => {
 
         if (Date.now() > timer) {
           clearInterval(interval);
+          console.warn('Verification timed out for address:', address);
           alert('Verification timed out. Please try again.');
           setIsVerifying(false);
           setMobileVerification(false);
