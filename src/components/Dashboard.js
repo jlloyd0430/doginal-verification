@@ -4,7 +4,7 @@ import { connectWallet, DOGELABS_WALLET, MYDOGE_WALLET } from '../wallet';
 import './Dashboard.css';
 
 const Dashboard = () => {
-  const [walletAddress, setWalletAddress] = useState(null);
+  const [walletAddress, setWalletAddress] = useState(null); // Only set this after verification
   const [discordID, setDiscordID] = useState(null);
   const [walletProvider, setWalletProvider] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -12,6 +12,7 @@ const Dashboard = () => {
   const [randomAmount, setRandomAmount] = useState(null);
   const [timer, setTimer] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [tempAddress, setTempAddress] = useState(''); // Temporary address before verification
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -38,7 +39,7 @@ const Dashboard = () => {
       const walletInfo = await connectWallet(selectedWalletProvider);
       console.log('Wallet info:', walletInfo);
       if (walletInfo && walletInfo.address) {
-        setWalletAddress(walletInfo.address);
+        setWalletAddress(walletInfo.address); // Set only after API verification
         logUserData(walletInfo.address, selectedWalletProvider);
       } else {
         console.error("Wallet connection failed or address is missing.");
@@ -75,17 +76,15 @@ const Dashboard = () => {
     setMobileVerification(true);
   };
 
-  const startVerificationProcess = async (address) => {
-    const randomAmount = parseFloat((Math.random() * 0.01).toFixed(5)); // Generate a random amount between 0.00001 - 0.01 DOGE
-    setWalletAddress(address);
+  const startVerificationProcess = async () => {
+    const randomAmount = parseFloat((Math.random() * 0.01).toFixed(5)); // Generate random amount between 0.00001 - 0.01 DOGE
     setRandomAmount(randomAmount);
-
-    setTimer(Date.now() + process.env.REACT_APP_TRANSACTION_TIMEOUT * 60000); // Set a 20-30 minute timer
+    setTimer(Date.now() + process.env.REACT_APP_TRANSACTION_TIMEOUT * 60000); // Set timer
     setIsVerifying(true);
 
-    alert(`Please send exactly ${randomAmount} DOGE from your wallet (${address}) to the same address within the next 30 minutes.`);
+    alert(`Please send exactly ${randomAmount} DOGE from your wallet (${tempAddress}) to the same address within the next 30 minutes.`);
 
-    validateTransaction(address, randomAmount);
+    validateTransaction(tempAddress, randomAmount);
   };
 
   const validateTransaction = async (address, amount) => {
@@ -103,14 +102,14 @@ const Dashboard = () => {
           if (tx.value === amount * 100000000 && tx.mined.confirmations >= process.env.REACT_APP_TX_CONFIRMATIONS) {
             clearInterval(interval);
             alert('Wallet verified successfully!');
-            logUserData(address, 'mobile');
+            setWalletAddress(address); // Set the verified address to walletAddress
+            logUserData(address, 'mobile'); // Log only after verification
             setIsVerifying(false);
             setMobileVerification(false);
             return;
           }
         }
 
-        // Check if the timer has expired
         if (Date.now() > timer) {
           clearInterval(interval);
           alert('Verification timed out. Please try again.');
@@ -127,7 +126,11 @@ const Dashboard = () => {
     <div className="dashboard-container">
       <h1>Connect Your Wallet</h1>
       {discordID ? (
-        !walletAddress ? (
+        walletAddress ? (
+          <div>
+            <p>Connected Wallet: {walletAddress}</p>
+          </div>
+        ) : (
           <div className="wallet-button-group">
             <button onClick={() => setDropdownOpen(!dropdownOpen)} className="wallet-button">
               Select Wallet
@@ -146,10 +149,6 @@ const Dashboard = () => {
               </div>
             )}
           </div>
-        ) : (
-          <div>
-            <p>Connected Wallet: {walletAddress}</p>
-          </div>
         )
       ) : (
         <p>Please log in with Discord first.</p>
@@ -162,15 +161,17 @@ const Dashboard = () => {
           <input
             type="text"
             placeholder="Enter wallet address"
-            onChange={(e) => setWalletAddress(e.target.value)}
+            value={tempAddress}
+            onChange={(e) => setTempAddress(e.target.value)}
           />
-          <button onClick={() => startVerificationProcess(walletAddress)}>Verify</button>
+          <button onClick={startVerificationProcess}>Verify</button>
         </div>
       )}
 
       {isVerifying && (
         <div>
-          <p>Please send exactly {randomAmount} DOGE to your wallet ({walletAddress}) within the next 30 minutes.</p>
+          <p>Please send exactly {randomAmount} DOGE to your wallet ({tempAddress}) within the next 30 minutes.</p>
+          <p>Waiting for transaction confirmation...</p>
         </div>
       )}
     </div>
