@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { connectWallet, DOGELABS_WALLET, MYDOGE_WALLET } from '../wallet';
-import './Dashboard.css'; // Import the new CSS file
+import './Dashboard.css';
 
 const Dashboard = () => {
   const [walletAddress, setWalletAddress] = useState(null);
   const [discordID, setDiscordID] = useState(null);
   const [walletProvider, setWalletProvider] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileVerification, setMobileVerification] = useState(false);
+  const [randomAmount, setRandomAmount] = useState(null);
+  const [timer, setTimer] = useState(null);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -22,7 +26,7 @@ const Dashboard = () => {
         .then((res) => res.json())
         .then((data) => {
           setDiscordID(data.id);
-          console.log("Discord ID:", data.id); // Log Discord ID for verification
+          console.log("Discord ID:", data.id);
         })
         .catch((error) => console.error("Failed to fetch Discord user info:", error));
     }
@@ -32,10 +36,10 @@ const Dashboard = () => {
     setWalletProvider(selectedWalletProvider);
     try {
       const walletInfo = await connectWallet(selectedWalletProvider);
-      console.log('Wallet info:', walletInfo); // Log complete walletInfo for debugging
+      console.log('Wallet info:', walletInfo);
       if (walletInfo && walletInfo.address) {
-        setWalletAddress(walletInfo.address); // Set only the address
-        logUserData(walletInfo.address, selectedWalletProvider); // Pass the provider
+        setWalletAddress(walletInfo.address);
+        logUserData(walletInfo.address, selectedWalletProvider);
       } else {
         console.error("Wallet connection failed or address is missing.");
       }
@@ -54,7 +58,7 @@ const Dashboard = () => {
       const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
         discordID,
         walletAddress: address,
-        provider, // Add the provider field
+        provider,
       });
 
       if (response.status === 200) {
@@ -64,14 +68,59 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.error('Error logging user data:', error);
-
-      // Log the error response if available
-      if (error.response) {
-        console.error('Response data:', error.response.data);
-        console.error('Response status:', error.response.status);
-        console.error('Response headers:', error.response.headers);
-      }
     }
+  };
+
+  const handleMobileVerification = () => {
+    setMobileVerification(true);
+  };
+
+  const startVerificationProcess = async (address) => {
+    const randomAmount = parseFloat((Math.random() * 0.01).toFixed(5)); // Generate a random amount between 0.00001 - 0.01 DOGE
+    setWalletAddress(address);
+    setRandomAmount(randomAmount);
+
+    setTimer(Date.now() + process.env.REACT_APP_TRANSACTION_TIMEOUT * 60000); // Set a 20-30 minute timer
+    setIsVerifying(true);
+
+    alert(`Please send exactly ${randomAmount} DOGE from your wallet (${address}) to the same address within the next 30 minutes.`);
+
+    validateTransaction(address, randomAmount);
+  };
+
+  const validateTransaction = async (address, amount) => {
+    const interval = setInterval(async () => {
+      try {
+        const result = await axios.get(`https://svc.blockdaemon.com/universal/v1/dogecoin/mainnet/account/${address}/utxo`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': process.env.REACT_APP_BLOCKDAEMON_API_KEY,
+          },
+        });
+
+        const transactions = result.data.data;
+        for (const tx of transactions) {
+          if (tx.value === amount * 100000000 && tx.mined.confirmations >= process.env.REACT_APP_TX_CONFIRMATIONS) {
+            clearInterval(interval);
+            alert('Wallet verified successfully!');
+            logUserData(address, 'mobile');
+            setIsVerifying(false);
+            setMobileVerification(false);
+            return;
+          }
+        }
+
+        // Check if the timer has expired
+        if (Date.now() > timer) {
+          clearInterval(interval);
+          alert('Verification timed out. Please try again.');
+          setIsVerifying(false);
+          setMobileVerification(false);
+        }
+      } catch (error) {
+        console.error('Error validating transaction:', error);
+      }
+    }, 10000); // Check every 10 seconds
   };
 
   return (
@@ -91,6 +140,9 @@ const Dashboard = () => {
                 <button onClick={() => handleWalletConnect(DOGELABS_WALLET)} className="dropdown-item">
                   Connect DogeLabs Wallet
                 </button>
+                <button onClick={handleMobileVerification} className="dropdown-item">
+                  Mobile Verification
+                </button>
               </div>
             )}
           </div>
@@ -101,6 +153,25 @@ const Dashboard = () => {
         )
       ) : (
         <p>Please log in with Discord first.</p>
+      )}
+
+      {mobileVerification && (
+        <div className="mobile-verification">
+          <h2>Mobile Verification</h2>
+          <p>Enter your wallet address for verification:</p>
+          <input
+            type="text"
+            placeholder="Enter wallet address"
+            onChange={(e) => setWalletAddress(e.target.value)}
+          />
+          <button onClick={() => startVerificationProcess(walletAddress)}>Verify</button>
+        </div>
+      )}
+
+      {isVerifying && (
+        <div>
+          <p>Please send exactly {randomAmount} DOGE to your wallet ({walletAddress}) within the next 30 minutes.</p>
+        </div>
       )}
     </div>
   );
