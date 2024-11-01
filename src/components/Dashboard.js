@@ -31,16 +31,19 @@ const Dashboard = () => {
     setWalletProvider(selectedWalletProvider);
     try {
       const walletInfo = await connectWallet(selectedWalletProvider);
-      if (walletInfo) {
-        setWalletAddress(walletInfo);
-        logUserData(walletInfo);
+      console.log('Wallet info:', walletInfo); // Log complete walletInfo for debugging
+      if (walletInfo && walletInfo.address) {
+        setWalletAddress(walletInfo.address); // Set only the address
+        logUserData(walletInfo.address); // Log only the address
+      } else {
+        console.error("Wallet connection failed or address is missing.");
       }
     } catch (error) {
       console.error("Error connecting to wallet:", error);
     }
   };
 
-  const logUserData = async (walletAddress) => {
+  const logUserData = async (address) => {
     if (!discordID) {
       console.error("Discord ID not set. Please log in.");
       return;
@@ -49,7 +52,7 @@ const Dashboard = () => {
     try {
       await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
         discordID,
-        walletAddress,
+        walletAddress: address,
       });
       console.log('User data logged successfully');
     } catch (error) {
