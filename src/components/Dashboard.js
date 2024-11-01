@@ -22,6 +22,7 @@ const Dashboard = () => {
         .then((res) => res.json())
         .then((data) => {
           setDiscordID(data.id);
+          console.log("Discord ID:", data.id); // Log Discord ID for verification
         })
         .catch((error) => console.error("Failed to fetch Discord user info:", error));
     }
@@ -34,7 +35,7 @@ const Dashboard = () => {
       console.log('Wallet info:', walletInfo); // Log complete walletInfo for debugging
       if (walletInfo && walletInfo.address) {
         setWalletAddress(walletInfo.address); // Set only the address
-        logUserData(walletInfo.address); // Log only the address
+        logUserData(walletInfo.address, selectedWalletProvider); // Pass the provider
       } else {
         console.error("Wallet connection failed or address is missing.");
       }
@@ -43,20 +44,33 @@ const Dashboard = () => {
     }
   };
 
-  const logUserData = async (address) => {
+  const logUserData = async (address, provider) => {
     if (!discordID) {
       console.error("Discord ID not set. Please log in.");
       return;
     }
 
     try {
-      await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
+      const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
         discordID,
         walletAddress: address,
+        provider, // Add the provider field
       });
-      console.log('User data logged successfully');
+
+      if (response.status === 200) {
+        console.log('User data logged successfully');
+      } else {
+        console.error(`Failed to log user data. Status: ${response.status}`);
+      }
     } catch (error) {
       console.error('Error logging user data:', error);
+
+      // Log the error response if available
+      if (error.response) {
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+        console.error('Response headers:', error.response.headers);
+      }
     }
   };
 
