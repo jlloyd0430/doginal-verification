@@ -78,7 +78,7 @@ const Dashboard = () => {
   };
 
   const startVerificationProcess = async () => {
-    const randomAmount = parseFloat((Math.random() * 0.01).toFixed(4)); // Generate random amount between 0.00001 - 0.01 DOGE
+    const randomAmount = parseFloat((Math.random() * 0.01).toFixed(5)); // Generate random amount between 0.00001 - 0.01 DOGE
     setRandomAmount(randomAmount);
     setTimer(Date.now() + 30 * 60 * 1000); // Set timer to 30 minutes from current time
     setIsVerifying(true);
