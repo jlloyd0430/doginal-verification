@@ -36,6 +36,7 @@ const Dashboard = () => {
   const handleWalletConnect = async (selectedWalletProvider) => {
     setWalletProvider(selectedWalletProvider);
     try {
+      console.log(`Attempting to connect to ${selectedWalletProvider} wallet...`);
       const walletInfo = await connectWallet(selectedWalletProvider);
       console.log('Wallet connection info:', walletInfo);
       if (walletInfo && walletInfo.address) {
