@@ -3,7 +3,7 @@ import axios from 'axios';
 import { connectWallet, DOGELABS_WALLET, MYDOGE_WALLET } from '../wallet';
 import './Dashboard.css';
 import myDogeIcon from '../assets/mydoge-icon.svg';
-import dogeLabsIcon from '../assets/dogelabs-icon.svg';
+import dogeLabsIcon from '../assets/dogelabs.svg';
 
 
 const Dashboard = () => {
