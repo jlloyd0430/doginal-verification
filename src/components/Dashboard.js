@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { connectWallet, DOGELABS_WALLET, MYDOGE_WALLET } from '../wallet';
 import './Dashboard.css';
-import myDogeIcon from '../../public/mydoge-icon.svg';
-import dogeLabsIcon from '../../public/dogelabs-icon.svg';
+import myDogeIcon from '../public/mydoge-icon.svg';
+import dogeLabsIcon from '../public/dogelabs-icon.svg';
 
 const Dashboard = () => {
   const [walletAddress, setWalletAddress] = useState(null);
