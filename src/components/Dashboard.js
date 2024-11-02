@@ -41,7 +41,7 @@ const Dashboard = () => {
       console.log('Wallet connection info:', walletInfo);
       if (walletInfo && walletInfo.address) {
         setWalletAddress(walletInfo.address);
-        logUserData(walletInfo.address, selectedWalletProvider);
+        await logUserData(walletInfo.address, selectedWalletProvider);
       } else {
         console.error("Wallet connection failed or address is missing.");
       }
@@ -109,7 +109,7 @@ const Dashboard = () => {
             console.log(`Transaction confirmed for ${address} with TX ID: ${tx.mined.tx_id}`);
             alert('Wallet verified successfully!');
             setWalletAddress(address); // Set the verified address to walletAddress
-            logUserData(address, 'mobile'); // Log only after verification
+            await logUserData(address, 'mobile'); // Log only after verification
             setIsVerifying(false);
             setMobileVerification(false);
             return;
