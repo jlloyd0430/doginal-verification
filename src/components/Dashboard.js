@@ -149,12 +149,13 @@ const Dashboard = () => {
             </button>
             {dropdownOpen && (
               <div className="dropdown-menu">
-                <button onClick={() => handleWalletConnect(MYDOGE_WALLET)} className="dropdown-item">
-                  <img src={myDogeIcon} alt="MyDoge Icon" className="wallet-icon" /> Connect MyDoge Wallet
-                </button>
-                <button onClick={() => handleWalletConnect(DOGELABS_WALLET)} className="dropdown-item">
-                  <img src={dogeLabsIcon} alt="DogeLabs Icon" className="wallet-icon" /> Connect DogeLabs Wallet
-                </button>
+             <button onClick={() => handleWalletConnect(MYDOGE_WALLET)} className="dropdown-item">
+  <img src={myDogeIcon} alt="MyDoge Icon" className="wallet-icon" /> Connect MyDoge Wallet
+</button>
+<button onClick={() => handleWalletConnect(DOGELABS_WALLET)} className="dropdown-item">
+  <img src={dogeLabsIcon} alt="DogeLabs Icon" className="wallet-icon" /> Connect DogeLabs Wallet
+</button>
+
                 <button onClick={handleMobileVerification} className="dropdown-item">
                   Mobile Verification
                 </button>
