@@ -95,47 +95,30 @@ const Dashboard = () => {
     validateTransaction(tempAddress, randomAmount);
   };
 
-  const validateTransaction = async (address, amount) => {
-    console.log(`Starting transaction validation for address: ${address} with amount: ${amount}`);
-    const startTime = Date.now();
-    const interval = setInterval(async () => {
-      try {
-        const result = await axios.get(`https://svc.blockdaemon.com/universal/v1/dogecoin/mainnet/account/${address}/utxo`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-API-Key': process.env.REACT_APP_BLOCKDAEMON_API_KEY,
-          },
-        });
+const validateTransaction = async (address, amount) => {
+  console.log(`Starting transaction validation for address: ${address} with amount: ${amount}`);
+  try {
+    const response = await axios.post('/api/users/validate-transaction', {
+      walletAddress: address,
+      amount,
+    });
 
-        console.log(`API response for ${address}:`, result.data);
-        const transactions = result.data.data;
+    if (response.data.success) {
+      console.log(`Transaction confirmed with TX ID: ${response.data.txId}`);
+      alert('Wallet verified successfully!');
+      setWalletAddress(address); // Set the verified address to walletAddress
+      await logUserData(address, 'mobile'); // Log only after verification
+      setIsVerifying(false);
+      setMobileVerification(false);
+    } else {
+      console.warn('Transaction validation failed:', response.data.message);
+    }
+  } catch (error) {
+    console.error('Error during transaction validation:', error);
+    alert('An error occurred during transaction validation. Please try again.');
+  }
+};
 
-        for (const tx of transactions) {
-          console.log(`Checking transaction:`, tx);
-          if (tx.value === amount * 100000000 && tx.mined.confirmations >= process.env.REACT_APP_TX_CONFIRMATIONS) {
-            clearInterval(interval);
-            console.log(`Transaction confirmed for ${address} with TX ID: ${tx.mined.tx_id}`);
-            alert('Wallet verified successfully!');
-            setWalletAddress(address); // Set the verified address to walletAddress
-            await logUserData(address, 'mobile'); // Log only after verification
-            setIsVerifying(false);
-            setMobileVerification(false);
-            return;
-          }
-        }
-
-        if (Date.now() > startTime + 30 * 60 * 1000) { // Check if 30 minutes have passed
-          clearInterval(interval);
-          console.warn('Verification timed out for address:', address);
-          alert('Verification timed out. Please try again.');
-          setIsVerifying(false);
-          setMobileVerification(false);
-        }
-      } catch (error) {
-        console.error('Error validating transaction:', error);
-      }
-    }, 10000); // Check every 10 seconds
-  };
 
   return (
     <div className="dashboard-container">
