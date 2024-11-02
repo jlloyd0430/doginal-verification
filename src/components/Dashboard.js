@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { connectWallet, DOGELABS_WALLET, MYDOGE_WALLET } from '../wallet';
 import './Dashboard.css';
+import myDogeIcon from '../../public/mydoge-icon.svg';
+import dogeLabsIcon from '../../public/dogelabs-icon.svg';
 
 const Dashboard = () => {
   const [walletAddress, setWalletAddress] = useState(null);
@@ -91,6 +93,7 @@ const Dashboard = () => {
 
   const validateTransaction = async (address, amount) => {
     console.log(`Starting transaction validation for address: ${address} with amount: ${amount}`);
+    const startTime = Date.now();
     const interval = setInterval(async () => {
       try {
         const result = await axios.get(`https://svc.blockdaemon.com/universal/v1/dogecoin/mainnet/account/${address}/utxo`, {
@@ -100,10 +103,11 @@ const Dashboard = () => {
           },
         });
 
+        console.log(`API response for ${address}:`, result.data);
         const transactions = result.data.data;
-        console.log(`Transactions fetched from Blockdaemon for ${address}:`, transactions);
 
         for (const tx of transactions) {
+          console.log(`Checking transaction:`, tx);
           if (tx.value === amount * 100000000 && tx.mined.confirmations >= process.env.REACT_APP_TX_CONFIRMATIONS) {
             clearInterval(interval);
             console.log(`Transaction confirmed for ${address} with TX ID: ${tx.mined.tx_id}`);
@@ -116,7 +120,7 @@ const Dashboard = () => {
           }
         }
 
-        if (Date.now() > timer) {
+        if (Date.now() > startTime + 30 * 60 * 1000) { // Check if 30 minutes have passed
           clearInterval(interval);
           console.warn('Verification timed out for address:', address);
           alert('Verification timed out. Please try again.');
@@ -145,10 +149,10 @@ const Dashboard = () => {
             {dropdownOpen && (
               <div className="dropdown-menu">
                 <button onClick={() => handleWalletConnect(MYDOGE_WALLET)} className="dropdown-item">
-                  Connect MyDoge Wallet
+                  <img src={myDogeIcon} alt="MyDoge Icon" className="wallet-icon" /> Connect MyDoge Wallet
                 </button>
                 <button onClick={() => handleWalletConnect(DOGELABS_WALLET)} className="dropdown-item">
-                  Connect DogeLabs Wallet
+                  <img src={dogeLabsIcon} alt="DogeLabs Icon" className="wallet-icon" /> Connect DogeLabs Wallet
                 </button>
                 <button onClick={handleMobileVerification} className="dropdown-item">
                   Mobile Verification
