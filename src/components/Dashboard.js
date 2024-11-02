@@ -80,7 +80,7 @@ const Dashboard = () => {
   const startVerificationProcess = async () => {
     const randomAmount = parseFloat((Math.random() * 0.01).toFixed(5)); // Generate random amount between 0.00001 - 0.01 DOGE
     setRandomAmount(randomAmount);
-    setTimer(Date.now() + process.env.REACT_APP_TRANSACTION_TIMEOUT * 60000); // Set timer
+    setTimer(Date.now() + 30 * 60 * 1000); // Set timer to 30 minutes from current time
     setIsVerifying(true);
 
     console.log(`Mobile verification started. Requesting ${randomAmount} DOGE to be sent to ${tempAddress}`);
