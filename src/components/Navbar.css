@@ -8,16 +8,37 @@
   position: relative;
 }
 
+.navbar-left {
+  display: flex;
+  align-items: center;
+}
+
 .navbar-logo {
   font-size: 24px;
   font-weight: bold;
+  margin-right: 20px;
+}
+
+.desktop-links {
+  display: flex;
+  gap: 20px;
+}
+
+.desktop-links a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 18px;
+  transition: color 0.3s;
+}
+
+.desktop-links a:hover {
+  color: #61dafb;
 }
 
 .menu-icon {
   cursor: pointer;
-  display: flex;
+  display: none; /* Hidden in desktop view */
   flex-direction: column;
-  margin-left: auto; /* Push the menu icon to the right */
 }
 
 .bar {
@@ -52,16 +73,12 @@
   transition: color 0.3s;
 }
 
-.nav-links a:hover {
-  color: #61dafb;
+.mobile-dark-mode-toggle {
+  display: none; /* Hidden by default */
 }
 
 .dark-mode-toggle {
   margin-left: auto;
-}
-
-.mobile-dark-mode-toggle {
-  display: none; /* Hidden by default */
 }
 
 .switch {
@@ -115,20 +132,16 @@ input:checked + .slider:before {
 
 /* Mobile responsive */
 @media (max-width: 768px) {
-  .dark-mode-toggle {
-    display: none; /* Hide the desktop dark mode toggle on mobile */
-  }
-
-  .mobile-dark-mode-toggle {
-    display: block; /* Show in the dropdown */
-    margin-top: 10px;
+  .desktop-links {
+    display: none; /* Hide desktop links on mobile */
   }
 
   .menu-icon {
-    margin-left: auto; /* Ensure the menu icon stays on the right */
+    display: flex; /* Show menu icon on mobile */
+    margin-left: auto;
   }
 
-  .nav-links {
+  .nav-links.mobile-links {
     display: none;
     position: absolute;
     top: 60px;
@@ -140,9 +153,18 @@ input:checked + .slider:before {
     border-radius: 8px;
   }
 
-  .nav-links a {
+  .nav-links.mobile-links a {
     padding: 10px;
     color: #fff;
     text-align: center;
+  }
+
+  .mobile-dark-mode-toggle {
+    display: block; /* Show in the dropdown */
+    margin-top: 10px;
+  }
+
+  .dark-mode-toggle {
+    display: none; /* Hide desktop dark mode toggle on mobile */
   }
 }
