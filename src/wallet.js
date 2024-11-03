@@ -65,16 +65,20 @@ export const connectDogeLabsWallet = async () => {
   }
   try {
     const accounts = await window.dogeLabs.requestAccounts();
+    console.log('DogeLabs accounts:', accounts); // Add this line
+    
     if (accounts.length !== 1) {
       throw new Error(`Invalid number of accounts detected (${accounts.length})`);
     }
+    
     console.log('DogeLabs Wallet connected:', accounts[0]);
-    return accounts[0];
+    return { address: accounts[0] }; // Ensure it returns an object with `address` key
   } catch (err) {
     console.error('Failed to connect to DogeLabs Wallet:', err);
     return null;
   }
 };
+
 
 // Function to get the balance of DogeLabs Wallet
 export const getDogeLabsBalance = async () => {
