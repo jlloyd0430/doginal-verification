@@ -36,24 +36,25 @@ const Dashboard = () => {
     }
   }, []);
 
- const handleWalletConnect = async (selectedWalletProvider) => {
-    setWalletProvider(selectedWalletProvider);
-    try {
-        console.log(`Attempting to connect to ${selectedWalletProvider} wallet...`);
-        const walletInfo = await connectWallet(selectedWalletProvider);
-        console.log('Wallet connection info:', walletInfo);
-        
-        if (walletInfo && walletInfo.address) {
-            setWalletAddress(walletInfo.address);
-            console.log(`Setting wallet address: ${walletInfo.address}`);
-            await logUserData(walletInfo.address, selectedWalletProvider);
-        } else {
-            console.error("Wallet connection failed or address is missing.");
-        }
-    } catch (error) {
-        console.error("Error connecting to wallet:", error);
+const handleWalletConnect = async (selectedWalletProvider) => {
+  setWalletProvider(selectedWalletProvider);
+  try {
+    console.log(`Attempting to connect to ${selectedWalletProvider} wallet...`);
+    const walletInfo = await connectWallet(selectedWalletProvider);
+    console.log('Wallet connection info:', walletInfo);
+    
+    if (walletInfo && walletInfo.address) {
+      setWalletAddress(walletInfo.address);
+      console.log(`Setting wallet address: ${walletInfo.address}`);
+      await logUserData(walletInfo.address, selectedWalletProvider);
+    } else {
+      console.error("Wallet connection failed or address is missing. Wallet info:", walletInfo); // Add this line
     }
+  } catch (error) {
+    console.error("Error connecting to wallet:", error);
+  }
 };
+
 
 
   const logUserData = async (address, provider) => {
