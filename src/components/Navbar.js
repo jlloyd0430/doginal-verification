@@ -11,16 +11,21 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
 
   return (
     <nav className="navbar">
-      <h1 className="navbar-logo">Dogepond Verification</h1>
+      <div className="navbar-left">
+        <h1 className="navbar-logo">Dogepond Verification</h1>
+        <ul className="nav-links desktop-links">
+          <li><Link to="/applications">Apply</Link></li>
+          <li><Link to="/services">Services</Link></li>
+        </ul>
+      </div>
       <div className="menu-icon" onClick={toggleMenu}>
         <div className={`bar ${menuOpen ? 'open' : ''}`} />
         <div className={`bar ${menuOpen ? 'open' : ''}`} />
         <div className={`bar ${menuOpen ? 'open' : ''}`} />
       </div>
-      <ul className={`nav-links ${menuOpen ? 'show' : ''}`}>
+      <ul className={`nav-links ${menuOpen ? 'show' : ''} mobile-links`}>
         <li><Link to="/applications" onClick={() => setMenuOpen(false)}>Apply</Link></li>
         <li><Link to="/services" onClick={() => setMenuOpen(false)}>Services</Link></li>
-        {/* Mobile dark mode toggle */}
         <li className="mobile-dark-mode-toggle">
           <label className="switch">
             <input type="checkbox" checked={darkMode} onChange={toggleDarkMode} />
@@ -28,7 +33,6 @@ const Navbar = ({ darkMode, toggleDarkMode }) => {
           </label>
         </li>
       </ul>
-      {/* Desktop dark mode toggle */}
       <div className="dark-mode-toggle">
         <label className="switch">
           <input type="checkbox" checked={darkMode} onChange={toggleDarkMode} />
