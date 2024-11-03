@@ -4,7 +4,7 @@ import { connectWallet, DOGELABS_WALLET, MYDOGE_WALLET } from '../wallet';
 import './Dashboard.css';
 import myDogeIcon from '../assets/mydoge-icon.svg';
 import dogeLabsIcon from '../assets/dogelabs.svg';
-import { FaMobileAlt } from 'react-icons/fa'; // Import the mobile icon
+import { FaMobileAlt } from 'react-icons/fa';
 
 const Dashboard = () => {
   const [walletAddress, setWalletAddress] = useState(null);
@@ -15,7 +15,7 @@ const Dashboard = () => {
   const [randomAmount, setRandomAmount] = useState(null);
   const [timer, setTimer] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
-  const [tempAddress, setTempAddress] = useState(''); // Temporary address for mobile verification
+  const [tempAddress, setTempAddress] = useState('');
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -119,9 +119,9 @@ const Dashboard = () => {
         console.log(`Transaction confirmed with TX ID: ${response.data.txId}`);
         alert('Wallet verified successfully!');
         setWalletAddress(address); 
-        await logUserData(address, 'mobile');
-        setIsVerifying(false);
+        setIsVerifying(false);  // Ensure these states are set
         setMobileVerification(false);
+        await logUserData(address, 'mobile');  // Log user data after verification
       } else {
         console.warn('Transaction validation failed:', response.data.message);
       }
