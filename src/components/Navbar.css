@@ -1,3 +1,4 @@
+/* General Navbar styling */
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -19,6 +20,7 @@
   margin-right: 20px;
 }
 
+/* Desktop Links */
 .desktop-links {
   display: flex;
   gap: 20px;
@@ -35,6 +37,7 @@
   color: #61dafb;
 }
 
+/* Menu Icon for Mobile */
 .menu-icon {
   cursor: pointer;
   display: none; /* Hidden in desktop view */
@@ -61,6 +64,7 @@
   transform: rotate(-45deg) translate(5px, -5px);
 }
 
+/* Mobile Links */
 .nav-links {
   display: flex;
   gap: 20px;
