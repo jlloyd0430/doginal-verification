@@ -160,11 +160,11 @@ input:checked + .slider:before {
   }
 
   .mobile-dark-mode-toggle {
-    display: block; /* Show in the dropdown */
+    display: block; /* Show dark mode toggle in the dropdown */
     margin-top: 10px;
   }
 
   .dark-mode-toggle {
-    display: none; /* Hide desktop dark mode toggle on mobile */
+    display: none; /* Hide the desktop dark mode toggle on mobile */
   }
 }
