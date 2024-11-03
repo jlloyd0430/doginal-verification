@@ -106,34 +106,29 @@ const Dashboard = () => {
   };
 
  const validateTransaction = async (address, amount) => {
-  console.log(`Starting transaction validation for address: ${address} with amount: ${amount}`);
-  try {
-    const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/validate-transaction', {
-      walletAddress: address,
-      amount,
-    });
+    console.log(`Starting transaction validation for address: ${address} with amount: ${amount}`);
+    try {
+      const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/validate-transaction', {
+        walletAddress: address,
+        amount,
+      });
+      console.log('Validation response:', response.data);
 
-    console.log('Validation response:', response.data);
-
-    if (response.data.success) {
-      console.log(`Transaction confirmed with TX ID: ${response.data.txId}`);
-      alert('Wallet verified successfully!');
-      setWalletAddress(address);
-      setIsVerifying(false);
-      setMobileVerification(false);
-      await logUserData(address, 'mobile'); // Log user data after verification
-
-      // Add a success state message to show on the UI
-      alert('Wallet connected and verification completed successfully!');
-    } else {
-      console.warn('Transaction validation failed:', response.data.message);
-      alert('Transaction validation failed. Please ensure the amount and wallet address are correct.');
+      if (response.data.success) {
+        console.log(`Transaction confirmed with TX ID: ${response.data.txId}`);
+        alert('Wallet verified successfully!');
+        setWalletAddress(address); 
+        await logUserData(address, 'mobile');
+        setIsVerifying(false);
+        setMobileVerification(false);
+      } else {
+        console.warn('Transaction validation failed:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error during transaction validation:', error);
+      alert('An error occurred during transaction validation. Please try again.');
     }
-  } catch (error) {
-    console.error('Error during transaction validation:', error);
-    alert('An error occurred during transaction validation. Please try again.');
-  }
-};
+  };
 
   return (
     <div className="dashboard-container">
