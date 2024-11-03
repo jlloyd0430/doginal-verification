@@ -105,22 +105,23 @@ const Dashboard = () => {
     }
   };
 
- const validateTransaction = async (address, amount) => {
+  const validateTransaction = async (address, amount) => {
     console.log(`Starting transaction validation for address: ${address} with amount: ${amount}`);
     try {
       const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/validate-transaction', {
         walletAddress: address,
         amount,
       });
+
       console.log('Validation response:', response.data);
 
       if (response.data.success) {
         console.log(`Transaction confirmed with TX ID: ${response.data.txId}`);
         alert('Wallet verified successfully!');
         setWalletAddress(address); 
-        await logUserData(address, 'mobile');
-        setIsVerifying(false);
+        setIsVerifying(false);  // Ensure these states are set
         setMobileVerification(false);
+        await logUserData(address, 'mobile');  // Log user data after verification
       } else {
         console.warn('Transaction validation failed:', response.data.message);
       }
