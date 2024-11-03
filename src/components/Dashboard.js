@@ -83,17 +83,29 @@ const Dashboard = () => {
     setMobileVerification(true);
   };
 
-  const startVerificationProcess = async () => {
-    const randomAmount = parseFloat((Math.random() * 0.01).toFixed(5)); // Generate random amount between 0.00001 - 0.01 DOGE
-    setRandomAmount(randomAmount);
-    setTimer(Date.now() + 30 * 60 * 1000); // Set timer to 30 minutes from current time
-    setIsVerifying(true);
+const startVerificationProcess = async () => {
+  if (!tempAddress) {
+    alert('Please enter a valid wallet address.');
+    return;
+  }
 
-    console.log(`Mobile verification started. Requesting ${randomAmount} DOGE to be sent to ${tempAddress}`);
-    alert(`Please send exactly ${randomAmount} DOGE from your wallet (${tempAddress}) to the same address within the next 30 minutes.`);
+  const randomAmount = parseFloat((Math.random() * 0.01).toFixed(5)); // Generate random amount between 0.00001 - 0.01 DOGE
+  setRandomAmount(randomAmount);
+  setTimer(Date.now() + 30 * 60 * 1000); // Set timer to 30 minutes from current time
+  setIsVerifying(true);
 
-    validateTransaction(tempAddress, randomAmount);
-  };
+  console.log(`Mobile verification started. Requesting ${randomAmount} DOGE to be sent to ${tempAddress}`);
+  alert(`Please send exactly ${randomAmount} DOGE from your wallet (${tempAddress}) to the same address within the next 30 minutes.`);
+
+  try {
+    await validateTransaction(tempAddress, randomAmount);
+  } catch (error) {
+    console.error('Verification process encountered an issue:', error);
+    setIsVerifying(false);
+    alert('An error occurred during the verification process. Please try again.');
+  }
+};
+
 
 const validateTransaction = async (address, amount) => {
   console.log(`Starting transaction validation for address: ${address} with amount: ${amount}`);
