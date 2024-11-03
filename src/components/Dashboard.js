@@ -106,30 +106,44 @@ const Dashboard = () => {
   };
 
   const validateTransaction = async (address, amount) => {
-    console.log(`Starting transaction validation for address: ${address} with amount: ${amount}`);
-    try {
-      const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/validate-transaction', {
-        walletAddress: address,
-        amount,
-      });
+  console.log(`Starting transaction validation for address: ${address} with amount: ${amount}`);
+  try {
+    const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/validate-transaction', {
+      walletAddress: address,
+      amount,
+    });
 
-      console.log('Validation response:', response.data);
+    console.log('Validation response:', response.data);
 
-      if (response.data.success) {
-        console.log(`Transaction confirmed with TX ID: ${response.data.txId}`);
-        alert('Wallet verified successfully!');
-        setWalletAddress(address); 
-        setIsVerifying(false);  // Ensure these states are set
-        setMobileVerification(false);
-        await logUserData(address, 'mobile');  // Log user data after verification
-      } else {
-        console.warn('Transaction validation failed:', response.data.message);
-      }
-    } catch (error) {
-      console.error('Error during transaction validation:', error);
-      alert('An error occurred during transaction validation. Please try again.');
+    if (response.data.success) {
+      console.log(`Transaction confirmed with TX ID: ${response.data.txId}`);
+      alert('Wallet verified successfully!');
+      setWalletAddress(address); 
+      setIsVerifying(false);
+      setMobileVerification(false);
+      await logUserData(address, 'mobile');
+    } else {
+      console.warn('Transaction validation failed:', response.data.message);
+      alert('Transaction validation failed. Please ensure the correct amount was sent and try again.');
     }
-  };
+  } catch (error) {
+    console.error('Error during transaction validation:', error);
+
+    // Enhanced error logging for more context
+    if (error.response) {
+      console.error('Response error data:', error.response.data);
+      console.error('Response status:', error.response.status);
+      console.error('Response headers:', error.response.headers);
+    } else if (error.request) {
+      console.error('Request made but no response received:', error.request);
+    } else {
+      console.error('Error message:', error.message);
+    }
+
+    alert('An error occurred during transaction validation. Please try again or contact support if the issue persists.');
+  }
+};
+
 
   return (
     <div className="dashboard-container">
