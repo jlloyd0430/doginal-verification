@@ -44,6 +44,14 @@
   flex-direction: column;
 }
 
+.dropdown-menu {
+  position: absolute;
+  right: 0; /* Aligns the dropdown to the right edge */
+  top: 100%; /* Positions it below the toggle button */
+  z-index: 1000; /* Ensures it stays on top */
+}
+
+
 .bar {
   width: 25px;
   height: 3px;
