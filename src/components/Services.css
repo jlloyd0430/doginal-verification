@@ -1,123 +1,29 @@
-/* Packages.css */
-
-
 .packages-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 20px;
   font-family: "Orbitron", sans-serif;
 }
 
-
-.responsive-image {
-  width: 100%;
-  height: auto;
-  margin-bottom: 20px;
-}
-
-.services{
+.services {
+  display: flex;
+  flex-direction: column;
   align-items: center;
 }
 
-.enquire-button {
-  padding: 10px 20px;
-  font-size: 1em;
-  margin-top: 10px;
-  cursor: pointer;
-}
-
-h1, h2, h3, p {
-  margin: 10px;
-}
-
-.packages-title {
-  padding: 10px;
-  text-align: center;
-  margin-bottom: 20px;
-  position: relative;
-  font-family: "Orbitron", sans-serif;
-}
-
-.packages-title::after {
-  content: '';
-  display: block;
-  width: 50%;
-  height: 3px;
-  background-color: goldenrod;
-  margin: 10px auto 0;
-}
-
-.packages-description {
-  text-align: center;
-  /* color: #e2dada; */
-  font-family: "Orbitron", sans-serif;
+.package {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   border: 2px solid #daa520;
   border-radius: 8px;
   margin-bottom: 30px;
   padding: 10px;
-  width: 650px;
+  width: 100%; /* Adjust this value as needed */
+  max-width: 650px; /* Set a max-width for better control */
 }
 
-.package {
-    border: 2px solid #daa520;
-    border-radius: 8px;
-    margin-bottom: 30px;
-    padding: 10px;
-    width: 650px;
-    align-items: center;
-}
-
-.package-title {
-  font-family: "Orbitron", sans-serif;
-  padding: 10px;
-  display: inline-block;
-  margin-bottom: 10px;
-  color: goldenrod;
-  font-size: 1.5em;
-}
-
-.package-description {
-  font-family: "Orbitron", sans-serif;
-  margin-bottom: 15px;
-  /* color: #e2dada; */
-}
-
-.enquire-button {
-  background-color: goldenrod;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 10px 20px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-
-/* Mobile Styles */
-@media (max-width: 600px) {
-  .package {
-    margin-bottom: 30px;
-    margin: 25px;
-    max-width: 400px;
-    border: 2px solid goldenrod;
-    border-radius: 8px;
-    padding: 10px;
-    /* background-color: #1e1e1e; */
-  }
-
-  .packages-container {
-    padding: 10px;
-  }
-
-  .packages-title {
-    font-size: 1.5em;
-  }
-
-  .package-title {
-    font-size: 1.2em;
-  }
-
-  .enquire-button {
-    padding: 8px 16px;
-    font-size: 14px;
-  }
+.package-title, .package-description {
+  text-align: center;
 }
