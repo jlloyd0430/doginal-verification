@@ -17,10 +17,7 @@
   cursor: pointer;
   display: flex;
   flex-direction: column;
-}
-
-.menu-icon {
-  margin-left: auto; /* Ensures it aligns to the right */
+  margin-left: auto; /* Push the menu icon to the right */
 }
 
 .bar {
@@ -57,6 +54,10 @@
 
 .nav-links a:hover {
   color: #61dafb;
+}
+
+.dark-mode-toggle {
+  margin-left: auto;
 }
 
 .mobile-dark-mode-toggle {
@@ -115,7 +116,7 @@ input:checked + .slider:before {
 /* Mobile responsive */
 @media (max-width: 768px) {
   .dark-mode-toggle {
-    display: none; /* Hide dark mode toggle on mobile */
+    display: none; /* Hide the desktop dark mode toggle on mobile */
   }
 
   .mobile-dark-mode-toggle {
@@ -124,7 +125,7 @@ input:checked + .slider:before {
   }
 
   .menu-icon {
-    margin-left: auto; /* Push the menu icon to the right */
+    margin-left: auto; /* Ensure the menu icon stays on the right */
   }
 
   .nav-links {
