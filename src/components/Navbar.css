@@ -64,7 +64,7 @@
   transform: rotate(-45deg) translate(5px, -5px);
 }
 
-/* Mobile Links */
+/* General Links */
 .nav-links {
   display: flex;
   gap: 20px;
@@ -77,14 +77,17 @@
   transition: color 0.3s;
 }
 
+/* Mobile Dark Mode Toggle */
 .mobile-dark-mode-toggle {
   display: none; /* Hidden by default */
 }
 
+/* Desktop Dark Mode Toggle */
 .dark-mode-toggle {
   margin-left: auto;
 }
 
+/* Switch Styling */
 .switch {
   position: relative;
   display: inline-block;
