@@ -1,6 +1,6 @@
 import React from 'react';
 import './Services.css';
-const Packages = () => {
+const Services = () => {
   // Function now accepts a URL as a parameter
   const handleButtonClick = (url) => {
     window.location.href = url;
