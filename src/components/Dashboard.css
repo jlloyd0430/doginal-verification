@@ -1,3 +1,18 @@
+dashboard-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+  }
+.wallet-icon {
+  width: 20px; /* Adjust size as needed */
+  height: 20px;
+  margin-right: 8px; /* Adds space between icon and text */
+  vertical-align: middle; /* Aligns icon with the text */
+}
+  
 .dashboard-container {
   display: flex;
   flex-direction: column;
@@ -5,13 +20,6 @@
   justify-content: center;
   height: 100vh;
   text-align: center;
-}
-
-.wallet-icon {
-  width: 20px; /* Adjust size as needed */
-  height: 20px;
-  margin-right: 8px; /* Adds space between icon and text */
-  vertical-align: middle; /* Aligns icon with the text */
 }
 
 .wallet-button-group {
@@ -38,12 +46,10 @@
 .dropdown-menu {
   position: absolute;
   top: 100%;
-  left: 50%;
-  transform: translateX(-50%); /* Centers dropdown horizontally */
+  left: 0;
   background-color: #333;
   border-radius: 8px;
-  width: 200px; /* Width for desktop */
-  max-width: 90vw; /* Prevents overflow on smaller screens */
+  width: 200px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   z-index: 1;
   margin-top: 8px;
@@ -63,11 +69,4 @@
   background-color: #444;
 }
 
-/* Mobile-specific styling */
-@media (max-width: 600px) {
-  .dropdown-menu {
-    width: 90vw; /* Almost full width on mobile */
-    left: 50%;
-    transform: translateX(-50%); /* Center-align for mobile */
-  }
-}
+  
