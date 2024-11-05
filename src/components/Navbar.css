@@ -44,14 +44,6 @@
   flex-direction: column;
 }
 
-.dropdown-menu {
-  position: absolute;
-  right: 0; /* Aligns the dropdown to the right edge */
-  top: 100%; /* Positions it below the toggle button */
-  z-index: 1000; /* Ensures it stays on top */
-}
-
-
 .bar {
   width: 25px;
   height: 3px;
@@ -166,6 +158,10 @@ input:checked + .slider:before {
     width: 150px;
     padding: 10px;
     border-radius: 8px;
+  }
+
+  .nav-links.mobile-links.show {
+    display: flex;
   }
 
   .nav-links.mobile-links a {
