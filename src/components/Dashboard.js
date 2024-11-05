@@ -16,6 +16,7 @@ const Dashboard = () => {
   const [timer, setTimer] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [tempAddress, setTempAddress] = useState('');
+  const [verificationMessage, setVerificationMessage] = useState(''); // New state for user feedback
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -47,11 +48,14 @@ const Dashboard = () => {
         setWalletAddress(walletInfo.address);
         console.log(`Setting wallet address: ${walletInfo.address}`);
         await logUserData(walletInfo.address, selectedWalletProvider);
+        setVerificationMessage("Wallet Connected Successfully!"); // Update user feedback
       } else {
         console.error("Wallet connection failed or address is missing. Wallet info:", walletInfo);
+        setVerificationMessage("Wallet connection failed. Please try again.");
       }
     } catch (error) {
       console.error("Error connecting to wallet:", error);
+      setVerificationMessage("Error connecting to wallet.");
     }
   };
 
@@ -80,6 +84,7 @@ const Dashboard = () => {
   const handleMobileVerification = () => {
     console.log("Initiating mobile verification");
     setMobileVerification(true);
+    setVerificationMessage(''); // Clear any previous message
   };
 
   const startVerificationProcess = async () => {
@@ -106,44 +111,45 @@ const Dashboard = () => {
   };
 
   const validateTransaction = async (address, amount) => {
-  console.log(`Starting transaction validation for address: ${address} with amount: ${amount}`);
-  try {
-    const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/validate-transaction', {
-      walletAddress: address,
-      amount,
-    });
+    console.log(`Starting transaction validation for address: ${address} with amount: ${amount}`);
+    try {
+      const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/validate-transaction', {
+        walletAddress: address,
+        amount,
+      });
 
-    console.log('Validation response:', response.data);
+      console.log('Validation response:', response.data);
 
-    if (response.data.success) {
-      console.log(`Transaction confirmed with TX ID: ${response.data.txId}`);
-      alert('Wallet verified successfully!');
-      setWalletAddress(address); 
-      setIsVerifying(false);
-      setMobileVerification(false);
-      await logUserData(address, 'mobile');
-    } else {
-      console.warn('Transaction validation failed:', response.data.message);
-      alert('Transaction validation failed. Please ensure the correct amount was sent and try again.');
+      if (response.data.success) {
+        console.log(`Transaction confirmed with TX ID: ${response.data.txId}`);
+        alert('Wallet verified successfully!');
+        setWalletAddress(address); 
+        setIsVerifying(false);
+        setMobileVerification(false);
+        await logUserData(address, 'mobile');
+        setVerificationMessage("Wallet Verified and Connected!");
+      } else {
+        console.warn('Transaction validation failed:', response.data.message);
+        setVerificationMessage("Transaction validation failed. Please ensure the correct amount was sent and try again.");
+        alert('Transaction validation failed. Please ensure the correct amount was sent and try again.');
+      }
+    } catch (error) {
+      console.error('Error during transaction validation:', error);
+
+      if (error.response) {
+        console.error('Response error data:', error.response.data);
+        console.error('Response status:', error.response.status);
+        console.error('Response headers:', error.response.headers);
+      } else if (error.request) {
+        console.error('Request made but no response received:', error.request);
+      } else {
+        console.error('Error message:', error.message);
+      }
+
+      setVerificationMessage("An error occurred during transaction validation. Please try again.");
+      alert('An error occurred during transaction validation. Please try again or contact support if the issue persists.');
     }
-  } catch (error) {
-    console.error('Error during transaction validation:', error);
-
-    // Enhanced error logging for more context
-    if (error.response) {
-      console.error('Response error data:', error.response.data);
-      console.error('Response status:', error.response.status);
-      console.error('Response headers:', error.response.headers);
-    } else if (error.request) {
-      console.error('Request made but no response received:', error.request);
-    } else {
-      console.error('Error message:', error.message);
-    }
-
-    alert('An error occurred during transaction validation. Please try again or contact support if the issue persists.');
-  }
-};
-
+  };
 
   return (
     <div className="dashboard-container">
@@ -152,6 +158,7 @@ const Dashboard = () => {
         walletAddress ? (
           <div>
             <p>Connected Wallet: {walletAddress}</p>
+            {verificationMessage && <p>{verificationMessage}</p>} {/* Display feedback */}
           </div>
         ) : (
           <div className="wallet-button-group">
@@ -197,6 +204,7 @@ const Dashboard = () => {
           <p>Waiting for transaction confirmation...</p>
         </div>
       )}
+      {verificationMessage && <p>{verificationMessage}</p>} {/* Global feedback */}
     </div>
   );
 };
