@@ -38,11 +38,11 @@
 .dropdown-menu {
   position: absolute;
   top: 100%;
-  left: 0;
-  right: 0; /* Ensures dropdown stays within the screen */
+  left: 50%;
+  transform: translateX(-50%); /* Centers dropdown horizontally */
   background-color: #333;
   border-radius: 8px;
-  width: 200px; /* Adjust width for desktop */
+  width: 200px; /* Width for desktop */
   max-width: 90vw; /* Prevents overflow on smaller screens */
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   z-index: 1;
@@ -63,12 +63,11 @@
   background-color: #444;
 }
 
-/* Optional: Additional mobile styling */
+/* Mobile-specific styling */
 @media (max-width: 600px) {
   .dropdown-menu {
-    width: 100%; /* Full width for mobile */
-    max-width: 90vw;
-    left: auto; /* Center align if needed */
-    right: auto;
+    width: 90vw; /* Almost full width on mobile */
+    left: 50%;
+    transform: translateX(-50%); /* Center-align for mobile */
   }
 }
