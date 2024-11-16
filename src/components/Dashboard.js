@@ -4,19 +4,18 @@ import { connectWallet, DOGELABS_WALLET, MYDOGE_WALLET } from '../wallet';
 import './Dashboard.css';
 import myDogeIcon from '../assets/mydoge-icon.svg';
 import dogeLabsIcon from '../assets/dogelabs.svg';
-import { FaMobileAlt } from 'react-icons/fa';
+import { FaMobileAlt, FaCopy } from 'react-icons/fa';
 
 const Dashboard = () => {
-  const [walletAddress, setWalletAddress] = useState(null);
-  const [discordID, setDiscordID] = useState(null);
-  const [walletProvider, setWalletProvider] = useState(null);
+  const [walletAddress, setWalletAddress] = useState('');
+  const [discordID, setDiscordID] = useState('');
+  const [walletProvider, setWalletProvider] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileVerification, setMobileVerification] = useState(false);
   const [randomAmount, setRandomAmount] = useState(null);
-  const [timer, setTimer] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [tempAddress, setTempAddress] = useState('');
-  const [verificationMessage, setVerificationMessage] = useState(''); // New state for user feedback
+  const [verificationMessage, setVerificationMessage] = useState('');
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -40,17 +39,12 @@ const Dashboard = () => {
   const handleWalletConnect = async (selectedWalletProvider) => {
     setWalletProvider(selectedWalletProvider);
     try {
-      console.log(`Attempting to connect to ${selectedWalletProvider} wallet...`);
       const walletInfo = await connectWallet(selectedWalletProvider);
-      console.log('Wallet connection info:', walletInfo);
-      
-      if (walletInfo && walletInfo.address) {
+      if (walletInfo?.address) {
         setWalletAddress(walletInfo.address);
-        console.log(`Setting wallet address: ${walletInfo.address}`);
         await logUserData(walletInfo.address, selectedWalletProvider);
-        setVerificationMessage("Wallet Connected Successfully!"); // Update user feedback
+        setVerificationMessage("Wallet Connected Successfully!");
       } else {
-        console.error("Wallet connection failed or address is missing. Wallet info:", walletInfo);
         setVerificationMessage("Wallet connection failed. Please try again.");
       }
     } catch (error) {
@@ -64,27 +58,21 @@ const Dashboard = () => {
       console.error("Discord ID not set. Please log in.");
       return;
     }
-
     try {
-      const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
+      await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
         discordID,
         walletAddress: address,
         provider,
       });
-      if (response.status === 200) {
-        console.log('User data logged successfully');
-      } else {
-        console.error(`Failed to log user data. Status: ${response.status}`);
-      }
+      console.log('User data logged successfully');
     } catch (error) {
       console.error('Error logging user data:', error);
     }
   };
 
   const handleMobileVerification = () => {
-    console.log("Initiating mobile verification");
     setMobileVerification(true);
-    setVerificationMessage(''); // Clear any previous message
+    setVerificationMessage('');
   };
 
   const startVerificationProcess = async () => {
@@ -93,62 +81,34 @@ const Dashboard = () => {
       return;
     }
 
-    const randomAmount = parseFloat((Math.random() * 0.01).toFixed(5)); // Generate random amount between 0.00001 - 0.01 DOGE
-    setRandomAmount(randomAmount);
-    setTimer(Date.now() + 30 * 60 * 1000); // Set timer to 30 minutes from current time
+    const amount = parseFloat((Math.random() * 0.9 + 0.1).toFixed(1)); // Random between 0.1 and 1.0 DOGE
+    setRandomAmount(amount);
     setIsVerifying(true);
 
-    console.log(`Mobile verification started. Requesting ${randomAmount} DOGE to be sent to ${tempAddress}`);
-    alert(`Please send exactly ${randomAmount} DOGE from your wallet (${tempAddress}) to the same address within the next 30 minutes.`);
-
-    try {
-      await validateTransaction(tempAddress, randomAmount);
-    } catch (error) {
-      console.error('Verification process encountered an issue:', error);
-      setIsVerifying(false);
-      alert('An error occurred during the verification process. Please try again.');
-    }
-  };
-
-  const validateTransaction = async (address, amount) => {
-    console.log(`Starting transaction validation for address: ${address} with amount: ${amount}`);
     try {
       const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/validate-transaction', {
-        walletAddress: address,
+        walletAddress: tempAddress,
         amount,
       });
 
-      console.log('Validation response:', response.data);
-
       if (response.data.success) {
-        console.log(`Transaction confirmed with TX ID: ${response.data.txId}`);
-        alert('Wallet verified successfully!');
-        setWalletAddress(address); 
-        setIsVerifying(false);
-        setMobileVerification(false);
-        await logUserData(address, 'mobile');
-        setVerificationMessage("Wallet Verified and Connected!");
+        setVerificationMessage("Wallet Verified Successfully!");
+        setWalletAddress(tempAddress);
       } else {
-        console.warn('Transaction validation failed:', response.data.message);
-        setVerificationMessage("Transaction validation failed. Please ensure the correct amount was sent and try again.");
-        alert('Transaction validation failed. Please ensure the correct amount was sent and try again.');
+        setVerificationMessage("Transaction validation failed. Try again.");
       }
     } catch (error) {
       console.error('Error during transaction validation:', error);
-
-      if (error.response) {
-        console.error('Response error data:', error.response.data);
-        console.error('Response status:', error.response.status);
-        console.error('Response headers:', error.response.headers);
-      } else if (error.request) {
-        console.error('Request made but no response received:', error.request);
-      } else {
-        console.error('Error message:', error.message);
-      }
-
-      setVerificationMessage("An error occurred during transaction validation. Please try again.");
-      alert('An error occurred during transaction validation. Please try again or contact support if the issue persists.');
+      setVerificationMessage("An error occurred. Please try again.");
+    } finally {
+      setIsVerifying(false);
+      setMobileVerification(false);
     }
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    alert("Copied to clipboard!");
   };
 
   return (
@@ -158,7 +118,7 @@ const Dashboard = () => {
         walletAddress ? (
           <div>
             <p>Connected Wallet: {walletAddress}</p>
-            {verificationMessage && <p>{verificationMessage}</p>} {/* Display feedback */}
+            {verificationMessage && <p>{verificationMessage}</p>}
           </div>
         ) : (
           <div className="wallet-button-group">
@@ -174,7 +134,7 @@ const Dashboard = () => {
                   <img src={dogeLabsIcon} alt="DogeLabs Icon" className="wallet-icon" /> DogeLabs Wallet
                 </button>
                 <button onClick={handleMobileVerification} className="dropdown-item">
-                  <FaMobileAlt className="wallet-icon" style={{ marginRight: '8px' }} /> Mobile Verification
+                  <FaMobileAlt className="wallet-icon" /> Mobile Verification
                 </button>
               </div>
             )}
@@ -195,16 +155,20 @@ const Dashboard = () => {
             onChange={(e) => setTempAddress(e.target.value)}
           />
           <button onClick={startVerificationProcess}>Verify</button>
+          {randomAmount && (
+            <div>
+              <p>
+                Send <b>{randomAmount} DOGE</b>{" "}
+                <FaCopy onClick={() => copyToClipboard(randomAmount)} className="copy-icon" />
+              </p>
+              <p>to address: {tempAddress}</p>
+            </div>
+          )}
         </div>
       )}
 
-      {isVerifying && (
-        <div>
-          <p>Please send exactly {randomAmount} DOGE to your wallet ({tempAddress}) within the next 30 minutes.</p>
-          <p>Waiting for transaction confirmation...</p>
-        </div>
-      )}
-      {verificationMessage && <p>{verificationMessage}</p>} {/* Global feedback */}
+      {isVerifying && <p>Verifying transaction...</p>}
+      {verificationMessage && <p>{verificationMessage}</p>}
     </div>
   );
 };
