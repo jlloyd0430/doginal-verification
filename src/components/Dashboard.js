@@ -18,6 +18,7 @@ const Dashboard = () => {
   const [verificationMessage, setVerificationMessage] = useState('');
 
   useEffect(() => {
+    // Fetch Discord user information using access token
     const hash = window.location.hash;
     const token = new URLSearchParams(hash.replace("#", "?")).get('access_token');
 
@@ -42,6 +43,7 @@ const Dashboard = () => {
       const walletInfo = await connectWallet(selectedWalletProvider);
       if (walletInfo?.address) {
         setWalletAddress(walletInfo.address);
+        console.log(`Wallet connected: ${walletInfo.address}`);
         await logUserData(walletInfo.address, selectedWalletProvider);
         setVerificationMessage("Wallet Connected Successfully!");
       } else {
@@ -59,12 +61,18 @@ const Dashboard = () => {
       return;
     }
     try {
-      await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
+      console.log(`Logging user data: Discord ID: ${discordID}, Wallet Address: ${address}, Provider: ${provider}`);
+      const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
         discordID,
         walletAddress: address,
         provider,
       });
-      console.log('User data logged successfully');
+
+      if (response.status === 200) {
+        console.log(`User data logged successfully in MongoDB for wallet: ${address}`);
+      } else {
+        console.error(`Failed to log user data. Status: ${response.status}`);
+      }
     } catch (error) {
       console.error('Error logging user data:', error);
     }
@@ -92,6 +100,8 @@ const Dashboard = () => {
       });
 
       if (response.data.success) {
+        console.log(`Transaction confirmed for wallet: ${tempAddress}`);
+        await logUserData(tempAddress, 'mobile');
         setVerificationMessage("Wallet Verified Successfully!");
         setWalletAddress(tempAddress);
       } else {
@@ -110,6 +120,7 @@ const Dashboard = () => {
     navigator.clipboard.writeText(text);
     alert("Copied to clipboard!");
   };
+
   return (
     <div className="dashboard-container">
       <h1>Connect Your Wallet</h1>
