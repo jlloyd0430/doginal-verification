@@ -110,6 +110,7 @@ const Dashboard = () => {
     navigator.clipboard.writeText(text);
     alert("Copied to clipboard!");
   };
+
   return (
     <div className="dashboard-container">
       <h1>Connect Your Wallet</h1>
