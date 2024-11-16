@@ -7,9 +7,9 @@ import dogeLabsIcon from '../assets/dogelabs.svg';
 import { FaMobileAlt, FaCopy } from 'react-icons/fa';
 
 const Dashboard = () => {
-  const [walletAddress, setWalletAddress] = useState(null);
-  const [discordID, setDiscordID] = useState(null);
-  const [walletProvider, setWalletProvider] = useState(null);
+  const [walletAddress, setWalletAddress] = useState('');
+  const [discordID, setDiscordID] = useState('');
+  const [walletProvider, setWalletProvider] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileVerification, setMobileVerification] = useState(false);
   const [randomAmount, setRandomAmount] = useState(null);
@@ -42,12 +42,10 @@ const Dashboard = () => {
       const walletInfo = await connectWallet(selectedWalletProvider);
       if (walletInfo?.address) {
         setWalletAddress(walletInfo.address);
-        console.log(`Wallet connected: ${walletInfo.address}`);
         await logUserData(walletInfo.address, selectedWalletProvider);
         setVerificationMessage("Wallet Connected Successfully!");
       } else {
         setVerificationMessage("Wallet connection failed. Please try again.");
-        console.error("Wallet connection failed.");
       }
     } catch (error) {
       console.error("Error connecting to wallet:", error);
@@ -60,21 +58,15 @@ const Dashboard = () => {
       console.error("Discord ID not set. Please log in.");
       return;
     }
-
     try {
-      const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
+      await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
         discordID,
         walletAddress: address,
         provider,
       });
-
-      if (response.status === 200) {
-        console.log(`User data logged successfully for wallet: ${address}`);
-      } else {
-        console.error(`Failed to log user data. Status: ${response.status}`);
-      }
+      console.log('User data logged successfully');
     } catch (error) {
-      console.error("Error logging user data:", error);
+      console.error('Error logging user data:', error);
     }
   };
 
@@ -89,31 +81,25 @@ const Dashboard = () => {
       return;
     }
 
-    const randomAmount = parseFloat((Math.random() * 0.9 + 0.1).toFixed(1)); // Random between 0.1 and 1.0 DOGE
-    setRandomAmount(randomAmount);
+    const amount = parseFloat((Math.random() * 0.9 + 0.1).toFixed(1)); // Random between 0.1 and 1.0 DOGE
+    setRandomAmount(amount);
     setIsVerifying(true);
-
-    console.log(`Mobile verification started for wallet: ${tempAddress}, requesting ${randomAmount} DOGE.`);
-    alert(`Please send exactly ${randomAmount} DOGE to your wallet (${tempAddress}).`);
 
     try {
       const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/validate-transaction', {
         walletAddress: tempAddress,
-        amount: randomAmount,
+        amount,
       });
 
       if (response.data.success) {
-        console.log(`Transaction confirmed for wallet: ${tempAddress}`);
-        await logUserData(tempAddress, 'mobile');
         setVerificationMessage("Wallet Verified Successfully!");
         setWalletAddress(tempAddress);
       } else {
-        console.error("Transaction validation failed:", response.data.message);
-        setVerificationMessage("Transaction validation failed. Please ensure the correct amount was sent and try again.");
+        setVerificationMessage("Transaction validation failed. Try again.");
       }
     } catch (error) {
-      console.error("Error during transaction validation:", error);
-      setVerificationMessage("An error occurred during validation. Please try again.");
+      console.error('Error during transaction validation:', error);
+      setVerificationMessage("An error occurred. Please try again.");
     } finally {
       setIsVerifying(false);
       setMobileVerification(false);
@@ -124,7 +110,6 @@ const Dashboard = () => {
     navigator.clipboard.writeText(text);
     alert("Copied to clipboard!");
   };
-
   return (
     <div className="dashboard-container">
       <h1>Connect Your Wallet</h1>
@@ -169,16 +154,19 @@ const Dashboard = () => {
             onChange={(e) => setTempAddress(e.target.value)}
           />
           <button onClick={startVerificationProcess}>Verify</button>
+          {randomAmount && (
+            <div>
+              <p>
+                Send <b>{randomAmount} DOGE</b>{" "}
+                <FaCopy onClick={() => copyToClipboard(randomAmount)} className="copy-icon" />
+              </p>
+              <p>to address: {tempAddress}</p>
+            </div>
+          )}
         </div>
       )}
 
-      {isVerifying && (
-        <div>
-          <p>Please send exactly {randomAmount} DOGE to your wallet ({tempAddress}) within the next 30 minutes.</p>
-          <button onClick={() => copyToClipboard(randomAmount)}>Copy Amount</button>
-        </div>
-      )}
-
+      {isVerifying && <p>Verifying transaction...</p>}
       {verificationMessage && <p>{verificationMessage}</p>}
     </div>
   );
