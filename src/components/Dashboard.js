@@ -117,6 +117,11 @@ const Dashboard = () => {
     }
   };
 
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    alert('Copied to clipboard!');
+  };
+
   const getIcon = (provider) => {
     switch (provider.toLowerCase()) {
       case 'mydoge':
