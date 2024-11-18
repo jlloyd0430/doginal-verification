@@ -16,24 +16,33 @@ const Dashboard = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [tempAddress, setTempAddress] = useState('');
   const [verificationMessage, setVerificationMessage] = useState('');
+  const [connectedWallets, setConnectedWallets] = useState([]);
 
   useEffect(() => {
     const hash = window.location.hash;
-    const token = new URLSearchParams(hash.replace('#', '?')).get('access_token');
+    const token = new URLSearchParams(hash.replace("#", "?")).get('access_token');
 
     if (token) {
-      console.log('Access token retrieved:', token);
       fetch('https://discord.com/api/users/@me', {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())
         .then((data) => {
           setDiscordID(data.id);
-          console.log('Discord ID fetched:', data.id);
+          fetchConnectedWallets(data.id); // Fetch previously connected wallets
         })
         .catch((error) => console.error('Failed to fetch Discord user info:', error));
     }
   }, []);
+
+  const fetchConnectedWallets = async (discordID) => {
+    try {
+      const response = await axios.get(`https://doginal-verification-be.onrender.com/api/users/${discordID}`);
+      setConnectedWallets(response.data.walletAddresses || []);
+    } catch (error) {
+      console.error('Error fetching connected wallets:', error.response?.data || error.message);
+    }
+  };
 
   const handleWalletConnect = async (selectedWalletProvider) => {
     setWalletProvider(selectedWalletProvider);
@@ -43,6 +52,7 @@ const Dashboard = () => {
         setWalletAddress(walletInfo.address);
         await logUserData(walletInfo.address, selectedWalletProvider);
         setVerificationMessage('Wallet Connected Successfully!');
+        fetchConnectedWallets(discordID); // Refresh connected wallets
       } else {
         setVerificationMessage('Wallet connection failed. Please try again.');
       }
@@ -60,16 +70,13 @@ const Dashboard = () => {
     }
 
     try {
-      const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
+      await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
         discordID,
         walletAddress: address,
         provider,
       });
-      console.log('User data logged successfully:', response.data);
-      setVerificationMessage('Wallet Logged Successfully!');
     } catch (error) {
       console.error('Error logging user data:', error.response?.data || error.message);
-      setVerificationMessage('Failed to log wallet. Try again.');
     }
   };
 
@@ -79,57 +86,74 @@ const Dashboard = () => {
   };
 
   const startVerificationProcess = async () => {
-    if (!tempAddress || tempAddress.trim() === '') {
+    if (!tempAddress) {
       setVerificationMessage('Please enter a valid wallet address.');
       return;
     }
 
     const amount = parseFloat((Math.random() * 0.9 + 0.1).toFixed(1)); // Random between 0.1 and 1.0 DOGE
     setRandomAmount(amount);
-    setIsVerifying(true); // Show "Verifying transaction..." message
+    setIsVerifying(true);
 
     try {
-      console.log('Starting verification process for wallet:', tempAddress, 'with amount:', amount);
       const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/validate-transaction', {
         walletAddress: tempAddress.trim(),
         amount,
       });
 
       if (response.data.success) {
-        console.log('Transaction validated successfully:', response.data);
         setVerificationMessage('Wallet Verified Successfully!');
-        setWalletAddress(tempAddress); // Update walletAddress
-
-        // Log the verified wallet to the database
+        setWalletAddress(tempAddress);
         await logUserData(tempAddress.trim(), 'Mobile Verification');
-        setMobileVerification(false); // Close mobile verification UI
+        fetchConnectedWallets(discordID); // Refresh connected wallets
       } else {
-        console.error('Transaction validation failed:', response.data.message);
         setVerificationMessage(response.data.message || 'Transaction validation failed. Try again.');
       }
     } catch (error) {
-      console.error('Error during transaction validation:', error.response?.data || error.message);
       setVerificationMessage(error.response?.data?.error || 'An error occurred. Please try again.');
     } finally {
-      setIsVerifying(false); // Stop "Verifying transaction..." message
+      setIsVerifying(false);
+      setMobileVerification(false);
     }
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    alert('Copied to clipboard!');
+  const getIcon = (provider) => {
+    switch (provider.toLowerCase()) {
+      case 'mydoge':
+        return <img src={myDogeIcon} alt="MyDoge" className="wallet-icon" />;
+      case 'dogelabs':
+        return <img src={dogeLabsIcon} alt="DogeLabs" className="wallet-icon" />;
+      case 'mobile':
+        return <FaMobileAlt className="wallet-icon" />;
+      default:
+        return null;
+    }
   };
 
   return (
     <div className="dashboard-container">
       <h1>Connect Your Wallet</h1>
       {discordID ? (
-        walletAddress ? (
-          <div>
-            <p>Connected Wallet: {walletAddress}</p>
-            {verificationMessage && <p>{verificationMessage}</p>}
+        <>
+          <div className="connected-wallets-container">
+            <h2>Previously Connected Wallets</h2>
+            {connectedWallets.length > 0 ? (
+              connectedWallets.map((wallet, index) => (
+                <div className="wallet-box" key={index}>
+                  <div className="wallet-details">
+                    {getIcon(wallet.provider)}
+                    <div>
+                      <p><strong>Provider:</strong> {wallet.provider}</p>
+                      <p><strong>Address:</strong> {wallet.address}</p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p>No wallets connected yet.</p>
+            )}
           </div>
-        ) : (
+
           <div className="wallet-button-group">
             <button onClick={() => setDropdownOpen(!dropdownOpen)} className="wallet-button">
               Select Wallet
@@ -148,7 +172,7 @@ const Dashboard = () => {
               </div>
             )}
           </div>
-        )
+        </>
       ) : (
         <p>Please log in with Discord first.</p>
       )}
