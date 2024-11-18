@@ -21,6 +21,7 @@ useEffect(() => {
   try {
     const hash = window.location.hash;
     const token = new URLSearchParams(hash.replace("#", "?")).get('access_token');
+     console.log("Access token:", token);
 
     if (token) {
       console.log("Access token retrieved:", token);
@@ -49,6 +50,9 @@ useEffect(() => {
     console.error("Error handling OAuth redirect:", error);
   }
 }, []);
+
+
+
 
   const handleWalletConnect = async (selectedWalletProvider) => {
     setWalletProvider(selectedWalletProvider);
