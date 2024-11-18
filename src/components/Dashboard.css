@@ -60,6 +60,7 @@
   width: 100%;
   display: flex;
   justify-content: center; /* Centers the button */
+  position: relative; /* Ensures dropdown aligns properly */
 }
 
 .wallet-button {
@@ -83,15 +84,14 @@
 /* Dropdown menu */
 .dropdown-menu {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 8px); /* Places the dropdown just below the button */
   left: 50%; /* Centers the dropdown */
-  transform: translateX(-50%);
+  transform: translateX(-50%); /* Centers it horizontally */
   background-color: #333;
   border-radius: 8px;
   width: 250px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   z-index: 1;
-  margin-top: 8px;
   text-align: left;
 }
 
