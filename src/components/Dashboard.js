@@ -23,21 +23,26 @@ const Dashboard = () => {
     const token = new URLSearchParams(hash.replace('#', '?')).get('access_token');
 
     if (token) {
-      fetch('https://discord.com/api/users/@me', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setDiscordID(data.id);
-          fetchConnectedWallets(data.id); // Fetch previously connected wallets
+      axios
+        .get('https://discord.com/api/users/@me', {
+          headers: { Authorization: `Bearer ${token}` },
         })
-        .catch((error) => console.error('Failed to fetch Discord user info:', error));
+        .then((response) => {
+          setDiscordID(response.data.id);
+          fetchConnectedWallets(response.data.id); // Fetch previously connected wallets
+        })
+        .catch((error) => {
+          console.error('Failed to fetch Discord user info:', error);
+          setVerificationMessage('Failed to fetch Discord user info.');
+        });
     }
   }, []);
 
   const fetchConnectedWallets = async (discordID) => {
     try {
-      const response = await axios.get(`https://doginal-verification-be.onrender.com/api/users/${discordID}`);
+      const response = await axios.get(
+        `https://doginal-verification-be.onrender.com/api/users/${discordID}`
+      );
       setConnectedWallets(response.data.walletAddresses || []);
     } catch (error) {
       console.error('Error fetching connected wallets:', error.response?.data || error.message);
@@ -86,26 +91,28 @@ const Dashboard = () => {
   };
 
   const startVerificationProcess = async () => {
-    if (!tempAddress) {
-      setVerificationMessage('Please enter a valid wallet address.');
+    if (!/^[Dd][a-zA-Z0-9]{33}$/.test(tempAddress)) {
+      setVerificationMessage('Invalid wallet address format.');
       return;
     }
 
-    const amount = parseFloat((Math.random() * 0.9 + 0.1).toFixed(1));
+    const amount = parseFloat((Math.random() * 0.9 + 0.1).toFixed(1)); // Random amount between 0.1 and 1.0
     setRandomAmount(amount);
     setIsVerifying(true);
 
     try {
-      const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/validate-transaction', {
-        walletAddress: tempAddress.trim(),
-        amount,
-      });
+      const response = await axios.post(
+        'https://doginal-verification-be.onrender.com/api/users/validate-transaction',
+        { walletAddress: tempAddress.trim(), amount }
+      );
 
       if (response.data.success) {
         setVerificationMessage('Wallet Verified Successfully!');
         setWalletAddress(tempAddress);
         await logUserData(tempAddress.trim(), 'Mobile Verification');
         fetchConnectedWallets(discordID); // Refresh connected wallets
+      } else {
+        setVerificationMessage('Verification failed. Please try again.');
       }
     } catch (error) {
       setVerificationMessage(error.response?.data?.error || 'An error occurred. Please try again.');
@@ -146,8 +153,12 @@ const Dashboard = () => {
                   <div className="wallet-details">
                     {getIcon(wallet.provider)}
                     <div>
-                      <p><strong>Provider:</strong> {wallet.provider}</p>
-                      <p><strong>Address:</strong> {wallet.address}</p>
+                      <p>
+                        <strong>Provider:</strong> {wallet.provider}
+                      </p>
+                      <p>
+                        <strong>Address:</strong> {wallet.address}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -158,18 +169,30 @@ const Dashboard = () => {
           </div>
 
           <div className="wallet-button-group">
-            <button onClick={() => setDropdownOpen(!dropdownOpen)} className="wallet-button">
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="wallet-button"
+            >
               Select Wallet
             </button>
             {dropdownOpen && (
               <div className="dropdown-menu">
-                <button onClick={() => handleWalletConnect(MYDOGE_WALLET)} className="dropdown-item">
+                <button
+                  onClick={() => handleWalletConnect(MYDOGE_WALLET)}
+                  className="dropdown-item"
+                >
                   <img src={myDogeIcon} alt="MyDoge Icon" className="wallet-icon" /> MyDoge Wallet
                 </button>
-                <button onClick={() => handleWalletConnect(DOGELABS_WALLET)} className="dropdown-item">
+                <button
+                  onClick={() => handleWalletConnect(DOGELABS_WALLET)}
+                  className="dropdown-item"
+                >
                   <img src={dogeLabsIcon} alt="DogeLabs Icon" className="wallet-icon" /> DogeLabs Wallet
                 </button>
-                <button onClick={handleMobileVerification} className="dropdown-item">
+                <button
+                  onClick={handleMobileVerification}
+                  className="dropdown-item"
+                >
                   <FaMobileAlt className="wallet-icon" /> Mobile Verification
                 </button>
               </div>
@@ -189,6 +212,7 @@ const Dashboard = () => {
             placeholder="Enter wallet address"
             value={tempAddress}
             onChange={(e) => setTempAddress(e.target.value)}
+            autoComplete="off"
           />
           <button onClick={startVerificationProcess}>Verify</button>
           {randomAmount && (
