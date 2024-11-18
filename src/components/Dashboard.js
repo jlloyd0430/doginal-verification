@@ -53,27 +53,26 @@ const Dashboard = () => {
     }
   };
 
- const logUserData = async (address, provider) => {
-  if (!discordID) {
-    console.error("Discord ID not set. Please log in.");
-    setVerificationMessage("Error: Discord not connected.");
-    return;
-  }
+  const logUserData = async (address, provider) => {
+    if (!discordID) {
+      console.error("Discord ID not set. Please log in.");
+      setVerificationMessage("Error: Discord not connected.");
+      return;
+    }
 
-  try {
-    const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
-      discordID,
-      walletAddress: address,
-      provider,
-    });
-    console.log('User data logged successfully:', response.data);
-    setVerificationMessage("Wallet Connected Successfully!");
-  } catch (error) {
-    console.error('Error logging user data:', error.response?.data || error.message);
-    setVerificationMessage("Failed to log wallet. Try again.");
-  }
-};
-
+    try {
+      const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
+        discordID,
+        walletAddress: address,
+        provider,
+      });
+      console.log('User data logged successfully:', response.data);
+      setVerificationMessage("Wallet Connected Successfully!");
+    } catch (error) {
+      console.error('Error logging user data:', error.response?.data || error.message);
+      setVerificationMessage("Failed to log wallet. Try again.");
+    }
+  };
 
   const handleMobileVerification = () => {
     setMobileVerification(true);
@@ -81,12 +80,21 @@ const Dashboard = () => {
   };
 
   const startVerificationProcess = async () => {
-    if (!tempAddress) {
-      alert('Please enter a valid wallet address.');
+    if (!tempAddress || tempAddress.trim() === '') {
+      setVerificationMessage('Wallet address is missing or invalid.');
+      console.error('Wallet address is missing or invalid.');
       return;
     }
 
     const amount = parseFloat((Math.random() * 0.9 + 0.1).toFixed(1)); // Random between 0.1 and 1.0 DOGE
+    if (isNaN(amount)) {
+      setVerificationMessage('Failed to generate a valid amount. Please try again.');
+      console.error('Generated amount is invalid:', amount);
+      return;
+    }
+
+    console.log('Sending payload:', { walletAddress: tempAddress, amount });
+
     setRandomAmount(amount);
     setIsVerifying(true);
 
@@ -103,8 +111,8 @@ const Dashboard = () => {
         setVerificationMessage("Transaction validation failed. Try again.");
       }
     } catch (error) {
-      console.error('Error during transaction validation:', error);
-      setVerificationMessage("An error occurred. Please try again.");
+      console.error('Error during transaction validation:', error.response?.data || error.message);
+      setVerificationMessage(error.response?.data?.error || "An error occurred. Please try again.");
     } finally {
       setIsVerifying(false);
       setMobileVerification(false);
