@@ -17,6 +17,8 @@ const Dashboard = () => {
   const [tempAddress, setTempAddress] = useState('');
   const [verificationMessage, setVerificationMessage] = useState('');
   const [connectedWallets, setConnectedWallets] = useState([]);
+  const [holderRoles, setHolderRoles] = useState([]);
+  const [newRole, setNewRole] = useState({ roleName: '', minAmount: '' });
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -30,6 +32,7 @@ const Dashboard = () => {
         .then((response) => {
           setDiscordID(response.data.id);
           fetchConnectedWallets(response.data.id);
+          fetchHolderRoles(response.data.id);
         })
         .catch((error) => {
           console.error('Failed to fetch Discord user info:', error);
@@ -46,6 +49,38 @@ const Dashboard = () => {
       setConnectedWallets(response.data.walletAddresses || []);
     } catch (error) {
       console.error('Error fetching connected wallets:', error.response?.data || error.message);
+    }
+  };
+
+  const fetchHolderRoles = async (discordID) => {
+    try {
+      const response = await axios.get(
+        `https://doginal-verification-be.onrender.com/api/roles/${discordID}`
+      );
+      setHolderRoles(response.data.holderRoles || []);
+    } catch (error) {
+      console.error('Error fetching holder roles:', error.response?.data || error.message);
+    }
+  };
+
+  const handleAddRole = async () => {
+    if (!newRole.roleName || !newRole.minAmount) {
+      setVerificationMessage('Role name and minimum amount are required.');
+      return;
+    }
+
+    try {
+      await axios.post(`https://doginal-verification-be.onrender.com/api/roles`, {
+        discordID,
+        roleName: newRole.roleName,
+        minAmount: parseInt(newRole.minAmount, 10),
+      });
+      setVerificationMessage('Role added successfully!');
+      setNewRole({ roleName: '', minAmount: '' });
+      fetchHolderRoles(discordID);
+    } catch (error) {
+      console.error('Error adding role:', error.response?.data || error.message);
+      setVerificationMessage('Failed to add role.');
     }
   };
 
@@ -165,6 +200,36 @@ const Dashboard = () => {
             ) : (
               <p>No wallets connected yet.</p>
             )}
+          </div>
+
+          <div className="holder-roles-container">
+            <h2>Current Holder Roles</h2>
+            {holderRoles.length > 0 ? (
+              holderRoles.map((role, index) => (
+                <div key={index}>
+                  <p>
+                    <strong>Role:</strong> {role.roleName} | <strong>Minimum NFTs:</strong> {role.minAmount}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p>No roles configured yet.</p>
+            )}
+            <div className="add-role-form">
+              <input
+                type="text"
+                placeholder="Role Name"
+                value={newRole.roleName}
+                onChange={(e) => setNewRole({ ...newRole, roleName: e.target.value })}
+              />
+              <input
+                type="number"
+                placeholder="Minimum NFTs"
+                value={newRole.minAmount}
+                onChange={(e) => setNewRole({ ...newRole, minAmount: e.target.value })}
+              />
+              <button onClick={handleAddRole}>Add Role</button>
+            </div>
           </div>
 
           <div className="wallet-button-group">
