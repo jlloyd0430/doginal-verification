@@ -17,43 +17,39 @@ const Dashboard = () => {
   const [tempAddress, setTempAddress] = useState('');
   const [verificationMessage, setVerificationMessage] = useState('');
 
-useEffect(() => {
-  try {
-    const hash = window.location.hash;
-    const token = new URLSearchParams(hash.replace("#", "?")).get('access_token');
-     console.log("Access token:", token);
+  // Fetch Discord user data via OAuth
+  useEffect(() => {
+    try {
+      const hash = window.location.hash;
+      const token = new URLSearchParams(hash.replace('#', '?')).get('access_token');
 
-    if (token) {
-      console.log("Access token retrieved:", token);
-      fetch("https://discord.com/api/users/@me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error(`Discord API error: ${res.status}`);
-          }
-          return res.json();
+      if (token) {
+        console.log('Access token retrieved:', token);
+        fetch('https://discord.com/api/users/@me', {
+          headers: { Authorization: `Bearer ${token}` },
         })
-        .then((data) => {
-          setDiscordID(data.id);
-          console.log("Discord ID fetched:", data.id);
-        })
-        .catch((error) => {
-          console.error("Error fetching Discord user info:", error);
-        });
-    } else {
-      console.warn("No access token found in URL.");
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error(`Discord API error: ${res.status}`);
+            }
+            return res.json();
+          })
+          .then((data) => {
+            setDiscordID(data.id);
+            console.log('Discord ID fetched:', data.id);
+          })
+          .catch((error) => {
+            console.error('Error fetching Discord user info:', error);
+          });
+      } else {
+        console.warn('No access token found in URL.');
+      }
+    } catch (error) {
+      console.error('Error handling OAuth redirect:', error);
     }
-  } catch (error) {
-    console.error("Error handling OAuth redirect:", error);
-  }
-}, []);
+  }, []);
 
-
-
-
+  // Handle wallet connection
   const handleWalletConnect = async (selectedWalletProvider) => {
     setWalletProvider(selectedWalletProvider);
     try {
@@ -61,43 +57,45 @@ useEffect(() => {
       if (walletInfo?.address) {
         setWalletAddress(walletInfo.address);
         await logUserData(walletInfo.address, selectedWalletProvider);
-        setVerificationMessage("Wallet Connected Successfully!");
+        setVerificationMessage('Wallet Connected Successfully!');
       } else {
-        setVerificationMessage("Wallet connection failed. Please try again.");
+        setVerificationMessage('Wallet connection failed. Please try again.');
       }
     } catch (error) {
-      console.error("Error connecting to wallet:", error);
-      setVerificationMessage("Error connecting to wallet.");
+      console.error('Error connecting to wallet:', error);
+      setVerificationMessage('Error connecting to wallet.');
     }
   };
 
+  // Log user data to the backend
   const logUserData = async (address, provider) => {
-  if (!discordID) {
-    console.error("Discord ID not set. Please log in.");
-    setVerificationMessage("Error: Discord not connected.");
-    return;
-  }
+    if (!discordID) {
+      console.error('Discord ID not set. Please log in.');
+      setVerificationMessage('Error: Discord not connected.');
+      return;
+    }
 
-  try {
-    const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
-      discordID,
-      walletAddress: address,
-      provider,
-    });
-    console.log('User data logged successfully:', response.data);
-    setVerificationMessage("Wallet Connected Successfully!");
-  } catch (error) {
-    console.error('Error logging user data:', error.response?.data || error.message);
-    setVerificationMessage("Failed to log wallet. Try again.");
-  }
-};
+    try {
+      const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
+        discordID,
+        walletAddress: address,
+        provider,
+      });
+      console.log('User data logged successfully:', response.data);
+      setVerificationMessage('Wallet Connected Successfully!');
+    } catch (error) {
+      console.error('Error logging user data:', error.response?.data || error.message);
+      setVerificationMessage('Failed to log wallet. Try again.');
+    }
+  };
 
-
+  // Start mobile verification process
   const handleMobileVerification = () => {
     setMobileVerification(true);
     setVerificationMessage('');
   };
 
+  // Validate transaction on the backend
   const startVerificationProcess = async () => {
     if (!tempAddress || tempAddress.trim() === '') {
       setVerificationMessage('Wallet address is missing or invalid.');
@@ -123,24 +121,28 @@ useEffect(() => {
         amount,
       });
 
+      console.log('Validation response:', response.data);
+
       if (response.data.success) {
-        setVerificationMessage("Wallet Verified Successfully!");
-        setWalletAddress(tempAddress);
+        setVerificationMessage('Wallet Verified Successfully!');
+        setWalletAddress(tempAddress); // Update walletAddress
+        setMobileVerification(false); // Close mobile verification UI
       } else {
-        setVerificationMessage("Transaction validation failed. Try again.");
+        setVerificationMessage('Transaction validation failed. Try again.');
+        console.error('Transaction validation failed:', response.data.message);
       }
     } catch (error) {
       console.error('Error during transaction validation:', error.response?.data || error.message);
-      setVerificationMessage(error.response?.data?.error || "An error occurred. Please try again.");
+      setVerificationMessage(error.response?.data?.error || 'An error occurred. Please try again.');
     } finally {
       setIsVerifying(false);
-      setMobileVerification(false);
     }
   };
 
+  // Copy text to clipboard
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    alert("Copied to clipboard!");
+    alert('Copied to clipboard!');
   };
 
   return (
@@ -190,7 +192,7 @@ useEffect(() => {
           {randomAmount && (
             <div>
               <p>
-                Send <b>{randomAmount} DOGE</b>{" "}
+                Send <b>{randomAmount} DOGE</b>{' '}
                 <FaCopy onClick={() => copyToClipboard(randomAmount)} className="copy-icon" />
               </p>
               <p>to address: {tempAddress}</p>
@@ -199,7 +201,7 @@ useEffect(() => {
         </div>
       )}
 
-      {isVerifying && <p>Verifying transaction...</p>}
+      {isVerifying && <p>Verifying transaction... Please wait.</p>}
       {verificationMessage && <p>{verificationMessage}</p>}
     </div>
   );
