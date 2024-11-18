@@ -89,77 +89,38 @@ const Dashboard = () => {
     setMobileVerification(true);
     setVerificationMessage('');
   };
-  
-const startVerificationProcess = async () => {
-  if (!/^[Dd][a-zA-Z0-9]{33}$/.test(tempAddress)) {
-    setVerificationMessage('Invalid wallet address format.');
-    return;
-  }
 
-  const amount = parseFloat((Math.random() * 0.9 + 0.1).toFixed(1));
-  setRandomAmount(amount);
-  setIsVerifying(true);
-
-  // Save state to localStorage
-  localStorage.setItem('verificationState', JSON.stringify({ walletAddress: tempAddress, amount }));
-
-  try {
-    const response = await axios.post(
-      'https://doginal-verification-be.onrender.com/api/users/validate-transaction',
-      { walletAddress: tempAddress.trim(), amount }
-    );
-
-    if (response.data.success) {
-      setVerificationMessage('Wallet Verified Successfully!');
-      setWalletAddress(tempAddress);
-      await logUserData(tempAddress.trim(), 'Mobile Verification');
-      fetchConnectedWallets(discordID); // Refresh connected wallets
-    } else {
-      setVerificationMessage('Verification failed. Please try again.');
+  const startVerificationProcess = async () => {
+    if (!/^[Dd][a-zA-Z0-9]{33}$/.test(tempAddress)) {
+      setVerificationMessage('Invalid wallet address format.');
+      return;
     }
-  } catch (error) {
-    setVerificationMessage(error.response?.data?.error || 'An error occurred. Please try again.');
-  } finally {
-    setIsVerifying(false);
-    setMobileVerification(false);
-  }
-};
 
-// Restore state on load
-useEffect(() => {
-  const savedState = localStorage.getItem('verificationState');
-  if (savedState) {
-    const { walletAddress, amount } = JSON.parse(savedState);
-    setTempAddress(walletAddress);
+    const amount = parseFloat((Math.random() * 0.9 + 0.1).toFixed(1)); // Random between 0.1 and 1.0 DOGE
     setRandomAmount(amount);
     setIsVerifying(true);
 
-    // Automatically resume validation
-    axios
-      .post('https://doginal-verification-be.onrender.com/api/users/validate-transaction', {
-        walletAddress,
-        amount,
-      })
-      .then((response) => {
-        if (response.data.success) {
-          setVerificationMessage('Wallet Verified Successfully!');
-          setWalletAddress(walletAddress);
-          logUserData(walletAddress, 'Mobile Verification');
-          fetchConnectedWallets(discordID);
-        } else {
-          setVerificationMessage('Verification failed. Please try again.');
-        }
-      })
-      .catch((error) => {
-        setVerificationMessage(error.response?.data?.error || 'An error occurred. Please try again.');
-      })
-      .finally(() => {
-        setIsVerifying(false);
-        localStorage.removeItem('verificationState');
-      });
-  }
-}, []);
+    try {
+      const response = await axios.post(
+        'https://doginal-verification-be.onrender.com/api/users/validate-transaction',
+        { walletAddress: tempAddress.trim(), amount }
+      );
 
+      if (response.data.success) {
+        setVerificationMessage('Wallet Verified Successfully!');
+        setWalletAddress(tempAddress);
+        await logUserData(tempAddress.trim(), 'Mobile Verification');
+        fetchConnectedWallets(discordID); // Refresh connected wallets
+      } else {
+        setVerificationMessage('Transaction validation failed. Try again.');
+      }
+    } catch (error) {
+      setVerificationMessage(error.response?.data?.error || 'An error occurred. Please try again.');
+    } finally {
+      setIsVerifying(false);
+      setMobileVerification(false);
+    }
+  };
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
@@ -251,7 +212,6 @@ useEffect(() => {
             placeholder="Enter wallet address"
             value={tempAddress}
             onChange={(e) => setTempAddress(e.target.value)}
-            autoComplete="off"
           />
           <button onClick={startVerificationProcess}>Verify</button>
           {randomAmount && (
