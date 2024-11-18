@@ -36,15 +36,6 @@ const Dashboard = () => {
           setVerificationMessage('Failed to fetch Discord user info.');
         });
     }
-
-    // Restore state from localStorage if it exists
-    const savedState = localStorage.getItem('verificationState');
-    if (savedState) {
-      const { walletAddress, amount } = JSON.parse(savedState);
-      setTempAddress(walletAddress);
-      setRandomAmount(amount);
-      setMobileVerification(true);
-    }
   }, []);
 
   const fetchConnectedWallets = async (discordID) => {
@@ -78,7 +69,6 @@ const Dashboard = () => {
 
   const logUserData = async (address, provider) => {
     if (!discordID) {
-      console.error('Discord ID not set. Please log in.');
       setVerificationMessage('Error: Discord not connected.');
       return;
     }
@@ -109,9 +99,6 @@ const Dashboard = () => {
     setRandomAmount(amount);
     setIsVerifying(true);
 
-    // Save state to localStorage
-    localStorage.setItem('verificationState', JSON.stringify({ walletAddress: tempAddress, amount }));
-
     try {
       const response = await axios.post(
         'https://doginal-verification-be.onrender.com/api/users/validate-transaction',
@@ -131,7 +118,6 @@ const Dashboard = () => {
       setVerificationMessage(error.response?.data?.error || 'An error occurred. Please try again.');
     } finally {
       setIsVerifying(false);
-      localStorage.removeItem('verificationState');
     }
   };
 
@@ -240,7 +226,7 @@ const Dashboard = () => {
       )}
 
       {isVerifying && <p>Verifying transaction... Please wait.</p>}
-      {verificationMessage && <p>{verificationMessage}</p>}
+      {verificationMessage && <p className="feedback-message">{verificationMessage}</p>}
     </div>
   );
 };
