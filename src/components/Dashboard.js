@@ -29,12 +29,21 @@ const Dashboard = () => {
         })
         .then((response) => {
           setDiscordID(response.data.id);
-          fetchConnectedWallets(response.data.id); // Fetch previously connected wallets
+          fetchConnectedWallets(response.data.id);
         })
         .catch((error) => {
           console.error('Failed to fetch Discord user info:', error);
           setVerificationMessage('Failed to fetch Discord user info.');
         });
+    }
+
+    // Restore state from localStorage if it exists
+    const savedState = localStorage.getItem('verificationState');
+    if (savedState) {
+      const { walletAddress, amount } = JSON.parse(savedState);
+      setTempAddress(walletAddress);
+      setRandomAmount(amount);
+      setMobileVerification(true);
     }
   }, []);
 
@@ -57,7 +66,7 @@ const Dashboard = () => {
         setWalletAddress(walletInfo.address);
         await logUserData(walletInfo.address, selectedWalletProvider);
         setVerificationMessage('Wallet Connected Successfully!');
-        fetchConnectedWallets(discordID); // Refresh connected wallets
+        fetchConnectedWallets(discordID);
       } else {
         setVerificationMessage('Wallet connection failed. Please try again.');
       }
@@ -100,6 +109,9 @@ const Dashboard = () => {
     setRandomAmount(amount);
     setIsVerifying(true);
 
+    // Save state to localStorage
+    localStorage.setItem('verificationState', JSON.stringify({ walletAddress: tempAddress, amount }));
+
     try {
       const response = await axios.post(
         'https://doginal-verification-be.onrender.com/api/users/validate-transaction',
@@ -110,15 +122,16 @@ const Dashboard = () => {
         setVerificationMessage('Wallet Verified Successfully!');
         setWalletAddress(tempAddress);
         await logUserData(tempAddress.trim(), 'Mobile Verification');
-        fetchConnectedWallets(discordID); // Refresh connected wallets
+        fetchConnectedWallets(discordID);
       } else {
         setVerificationMessage('Transaction validation failed. Try again.');
       }
     } catch (error) {
+      console.error('Error during transaction validation:', error);
       setVerificationMessage(error.response?.data?.error || 'An error occurred. Please try again.');
     } finally {
       setIsVerifying(false);
-      setMobileVerification(false);
+      localStorage.removeItem('verificationState');
     }
   };
 
