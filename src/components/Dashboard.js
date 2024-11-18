@@ -145,7 +145,7 @@ const Dashboard = () => {
       {discordID ? (
         <>
           <div className="connected-wallets-container">
-            <h2>Previously Connected Wallets</h2>
+            <h2>Connected Wallets</h2>
             {connectedWallets.length > 0 ? (
               connectedWallets.map((wallet, index) => (
                 <div className="wallet-box" key={index}>
