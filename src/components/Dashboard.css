@@ -161,6 +161,13 @@
   width: 100%;
 }
 
+.feedback-message {
+  margin-top: 20px;
+  color: red;
+  font-size: 16px;
+  text-align: center;
+}
+
 .mobile-verification button:hover {
   background-color: #e6be00;
 }
