@@ -17,7 +17,6 @@ const Dashboard = () => {
   const [tempAddress, setTempAddress] = useState('');
   const [verificationMessage, setVerificationMessage] = useState('');
 
-  // Fetch Discord user data via OAuth
   useEffect(() => {
     const hash = window.location.hash;
     const token = new URLSearchParams(hash.replace('#', '?')).get('access_token');
@@ -36,7 +35,6 @@ const Dashboard = () => {
     }
   }, []);
 
-  // Handle wallet connection
   const handleWalletConnect = async (selectedWalletProvider) => {
     setWalletProvider(selectedWalletProvider);
     try {
@@ -54,7 +52,6 @@ const Dashboard = () => {
     }
   };
 
-  // Log user data to the backend
   const logUserData = async (address, provider) => {
     if (!discordID) {
       console.error('Discord ID not set. Please log in.');
@@ -76,15 +73,13 @@ const Dashboard = () => {
     }
   };
 
-  // Start mobile verification process
   const handleMobileVerification = () => {
     setMobileVerification(true);
     setVerificationMessage('');
   };
 
-  // Validate transaction on the backend and log the wallet
   const startVerificationProcess = async () => {
-    if (!tempAddress) {
+    if (!tempAddress || tempAddress.trim() === '') {
       setVerificationMessage('Please enter a valid wallet address.');
       return;
     }
@@ -96,7 +91,7 @@ const Dashboard = () => {
     try {
       console.log('Starting verification process for wallet:', tempAddress, 'with amount:', amount);
       const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/validate-transaction', {
-        walletAddress: tempAddress,
+        walletAddress: tempAddress.trim(),
         amount,
       });
 
@@ -106,11 +101,11 @@ const Dashboard = () => {
         setWalletAddress(tempAddress); // Update walletAddress
 
         // Log the verified wallet to the database
-        await logUserData(tempAddress, 'Mobile Verification');
+        await logUserData(tempAddress.trim(), 'Mobile Verification');
         setMobileVerification(false); // Close mobile verification UI
       } else {
         console.error('Transaction validation failed:', response.data.message);
-        setVerificationMessage('Transaction validation failed. Try again.');
+        setVerificationMessage(response.data.message || 'Transaction validation failed. Try again.');
       }
     } catch (error) {
       console.error('Error during transaction validation:', error.response?.data || error.message);
@@ -120,7 +115,6 @@ const Dashboard = () => {
     }
   };
 
-  // Copy text to clipboard
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     alert('Copied to clipboard!');
