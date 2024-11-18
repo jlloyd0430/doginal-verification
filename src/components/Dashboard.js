@@ -53,22 +53,27 @@ const Dashboard = () => {
     }
   };
 
-  const logUserData = async (address, provider) => {
-    if (!discordID) {
-      console.error("Discord ID not set. Please log in.");
-      return;
-    }
-    try {
-      await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
-        discordID,
-        walletAddress: address,
-        provider,
-      });
-      console.log('User data logged successfully');
-    } catch (error) {
-      console.error('Error logging user data:', error);
-    }
-  };
+ const logUserData = async (address, provider) => {
+  if (!discordID) {
+    console.error("Discord ID not set. Please log in.");
+    setVerificationMessage("Error: Discord not connected.");
+    return;
+  }
+
+  try {
+    const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
+      discordID,
+      walletAddress: address,
+      provider,
+    });
+    console.log('User data logged successfully:', response.data);
+    setVerificationMessage("Wallet Connected Successfully!");
+  } catch (error) {
+    console.error('Error logging user data:', error.response?.data || error.message);
+    setVerificationMessage("Failed to log wallet. Try again.");
+  }
+};
+
 
   const handleMobileVerification = () => {
     setMobileVerification(true);
