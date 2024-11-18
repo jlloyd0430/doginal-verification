@@ -29,7 +29,7 @@ const Dashboard = () => {
         .then((res) => res.json())
         .then((data) => {
           setDiscordID(data.id);
-          fetchConnectedWallets(data.id);
+          fetchConnectedWallets(data.id); // Fetch previously connected wallets
         })
         .catch((error) => console.error('Failed to fetch Discord user info:', error));
     }
@@ -52,7 +52,7 @@ const Dashboard = () => {
         setWalletAddress(walletInfo.address);
         await logUserData(walletInfo.address, selectedWalletProvider);
         setVerificationMessage('Wallet Connected Successfully!');
-        fetchConnectedWallets(discordID);
+        fetchConnectedWallets(discordID); // Refresh connected wallets
       } else {
         setVerificationMessage('Wallet connection failed. Please try again.');
       }
@@ -105,9 +105,7 @@ const Dashboard = () => {
         setVerificationMessage('Wallet Verified Successfully!');
         setWalletAddress(tempAddress);
         await logUserData(tempAddress.trim(), 'Mobile Verification');
-        fetchConnectedWallets(discordID);
-      } else {
-        pollTransactionStatus(tempAddress);
+        fetchConnectedWallets(discordID); // Refresh connected wallets
       }
     } catch (error) {
       setVerificationMessage(error.response?.data?.error || 'An error occurred. Please try again.');
@@ -115,34 +113,6 @@ const Dashboard = () => {
       setIsVerifying(false);
       setMobileVerification(false);
     }
-  };
-
-  const pollTransactionStatus = async (walletAddress) => {
-    let attempts = 0;
-    const maxAttempts = 10;
-    const pollInterval = 5000;
-
-    const intervalId = setInterval(async () => {
-      attempts++;
-      if (attempts > maxAttempts) {
-        clearInterval(intervalId);
-        setVerificationMessage('Transaction validation timed out. Please try again.');
-        return;
-      }
-
-      try {
-        const response = await axios.get(`https://doginal-verification-be.onrender.com/api/users/transaction-status/${walletAddress}`);
-        if (response.data.success) {
-          clearInterval(intervalId);
-          setVerificationMessage('Wallet Verified Successfully!');
-          setWalletAddress(walletAddress);
-          await logUserData(walletAddress, 'Mobile Verification');
-          fetchConnectedWallets(discordID);
-        }
-      } catch (error) {
-        console.error('Error polling transaction status:', error.response?.data || error.message);
-      }
-    }, pollInterval);
   };
 
   const copyToClipboard = (text) => {
