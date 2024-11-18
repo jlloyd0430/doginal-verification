@@ -17,24 +17,38 @@ const Dashboard = () => {
   const [tempAddress, setTempAddress] = useState('');
   const [verificationMessage, setVerificationMessage] = useState('');
 
-  useEffect(() => {
+useEffect(() => {
+  try {
     const hash = window.location.hash;
     const token = new URLSearchParams(hash.replace("#", "?")).get('access_token');
 
     if (token) {
+      console.log("Access token retrieved:", token);
       fetch("https://discord.com/api/users/@me", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
-        .then((res) => res.json())
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`Discord API error: ${res.status}`);
+          }
+          return res.json();
+        })
         .then((data) => {
           setDiscordID(data.id);
           console.log("Discord ID fetched:", data.id);
         })
-        .catch((error) => console.error("Failed to fetch Discord user info:", error));
+        .catch((error) => {
+          console.error("Error fetching Discord user info:", error);
+        });
+    } else {
+      console.warn("No access token found in URL.");
     }
-  }, []);
+  } catch (error) {
+    console.error("Error handling OAuth redirect:", error);
+  }
+}, []);
 
   const handleWalletConnect = async (selectedWalletProvider) => {
     setWalletProvider(selectedWalletProvider);
