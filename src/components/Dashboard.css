@@ -84,16 +84,37 @@
 /* Dropdown menu */
 .dropdown-menu {
   position: absolute;
-  top: calc(100% + 8px); /* Places the dropdown just below the button */
-  left: 50%; /* Centers the dropdown */
-  transform: translateX(-50%); /* Centers it horizontally */
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
   background-color: #333;
   border-radius: 8px;
   width: 250px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   z-index: 1;
+  margin-top: 8px;
+  padding: 10px; /* Add padding for better spacing */
   text-align: left;
 }
+
+/* Mobile Verification Section */
+.mobile-verification {
+  margin-top: 30px; /* Add more space above mobile verification */
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+/* Ensure validation messages are visible */
+.verification-message {
+  margin-top: 15px;
+  color: red; /* Adjust color for error messages */
+  font-size: 14px;
+}
+
 
 .dropdown-item {
   color: #fff;
@@ -110,18 +131,7 @@
   background-color: #444;
 }
 
-/* Mobile verification section */
-.mobile-verification {
-  width: 100%;
-  max-width: 400px;
-  margin-top: 20px;
-  padding: 20px;
-  border-radius: 8px;
-  background-color: #ffffff;
-  border: 1px solid #ddd;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  text-align: center;
-}
+
 
 .mobile-verification input {
   width: 100%;
