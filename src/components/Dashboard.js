@@ -17,25 +17,26 @@ const Dashboard = () => {
   const [tempAddress, setTempAddress] = useState('');
   const [verificationMessage, setVerificationMessage] = useState('');
 
+  // Fetch Discord user data via OAuth
   useEffect(() => {
     const hash = window.location.hash;
-    const token = new URLSearchParams(hash.replace("#", "?")).get('access_token');
+    const token = new URLSearchParams(hash.replace('#', '?')).get('access_token');
 
     if (token) {
-      fetch("https://discord.com/api/users/@me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      console.log('Access token retrieved:', token);
+      fetch('https://discord.com/api/users/@me', {
+        headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())
         .then((data) => {
           setDiscordID(data.id);
-          console.log("Discord ID fetched:", data.id);
+          console.log('Discord ID fetched:', data.id);
         })
-        .catch((error) => console.error("Failed to fetch Discord user info:", error));
+        .catch((error) => console.error('Failed to fetch Discord user info:', error));
     }
   }, []);
 
+  // Handle wallet connection
   const handleWalletConnect = async (selectedWalletProvider) => {
     setWalletProvider(selectedWalletProvider);
     try {
@@ -43,73 +44,88 @@ const Dashboard = () => {
       if (walletInfo?.address) {
         setWalletAddress(walletInfo.address);
         await logUserData(walletInfo.address, selectedWalletProvider);
-        setVerificationMessage("Wallet Connected Successfully!");
+        setVerificationMessage('Wallet Connected Successfully!');
       } else {
-        setVerificationMessage("Wallet connection failed. Please try again.");
+        setVerificationMessage('Wallet connection failed. Please try again.');
       }
     } catch (error) {
-      console.error("Error connecting to wallet:", error);
-      setVerificationMessage("Error connecting to wallet.");
+      console.error('Error connecting to wallet:', error);
+      setVerificationMessage('Error connecting to wallet.');
     }
   };
 
+  // Log user data to the backend
   const logUserData = async (address, provider) => {
     if (!discordID) {
-      console.error("Discord ID not set. Please log in.");
+      console.error('Discord ID not set. Please log in.');
+      setVerificationMessage('Error: Discord not connected.');
       return;
     }
+
     try {
-      await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
+      const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/log-user-data', {
         discordID,
         walletAddress: address,
         provider,
       });
-      console.log('User data logged successfully');
+      console.log('User data logged successfully:', response.data);
+      setVerificationMessage('Wallet Logged Successfully!');
     } catch (error) {
-      console.error('Error logging user data:', error);
+      console.error('Error logging user data:', error.response?.data || error.message);
+      setVerificationMessage('Failed to log wallet. Try again.');
     }
   };
 
+  // Start mobile verification process
   const handleMobileVerification = () => {
     setMobileVerification(true);
     setVerificationMessage('');
   };
 
+  // Validate transaction on the backend and log the wallet
   const startVerificationProcess = async () => {
     if (!tempAddress) {
-      alert('Please enter a valid wallet address.');
+      setVerificationMessage('Please enter a valid wallet address.');
       return;
     }
 
     const amount = parseFloat((Math.random() * 0.9 + 0.1).toFixed(1)); // Random between 0.1 and 1.0 DOGE
     setRandomAmount(amount);
-    setIsVerifying(true);
+    setIsVerifying(true); // Show "Verifying transaction..." message
 
     try {
+      console.log('Starting verification process for wallet:', tempAddress, 'with amount:', amount);
       const response = await axios.post('https://doginal-verification-be.onrender.com/api/users/validate-transaction', {
         walletAddress: tempAddress,
         amount,
       });
 
       if (response.data.success) {
-        setVerificationMessage("Wallet Verified Successfully!");
-        setWalletAddress(tempAddress);
+        console.log('Transaction validated successfully:', response.data);
+        setVerificationMessage('Wallet Verified Successfully!');
+        setWalletAddress(tempAddress); // Update walletAddress
+
+        // Log the verified wallet to the database
+        await logUserData(tempAddress, 'Mobile Verification');
+        setMobileVerification(false); // Close mobile verification UI
       } else {
-        setVerificationMessage("Transaction validation failed. Try again.");
+        console.error('Transaction validation failed:', response.data.message);
+        setVerificationMessage('Transaction validation failed. Try again.');
       }
     } catch (error) {
-      console.error('Error during transaction validation:', error);
-      setVerificationMessage("An error occurred. Please try again.");
+      console.error('Error during transaction validation:', error.response?.data || error.message);
+      setVerificationMessage(error.response?.data?.error || 'An error occurred. Please try again.');
     } finally {
-      setIsVerifying(false);
-      setMobileVerification(false);
+      setIsVerifying(false); // Stop "Verifying transaction..." message
     }
   };
 
+  // Copy text to clipboard
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    alert("Copied to clipboard!");
+    alert('Copied to clipboard!');
   };
+
   return (
     <div className="dashboard-container">
       <h1>Connect Your Wallet</h1>
@@ -157,7 +173,7 @@ const Dashboard = () => {
           {randomAmount && (
             <div>
               <p>
-                Send <b>{randomAmount} DOGE</b>{" "}
+                Send <b>{randomAmount} DOGE</b>{' '}
                 <FaCopy onClick={() => copyToClipboard(randomAmount)} className="copy-icon" />
               </p>
               <p>to address: {tempAddress}</p>
@@ -166,7 +182,7 @@ const Dashboard = () => {
         </div>
       )}
 
-      {isVerifying && <p>Verifying transaction...</p>}
+      {isVerifying && <p>Verifying transaction... Please wait.</p>}
       {verificationMessage && <p>{verificationMessage}</p>}
     </div>
   );
